@@ -1,4 +1,4 @@
-package com.ajstudios.easyattendance;
+package com.ssgb.easyattendance;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -12,7 +12,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.ajstudios.easyattendance.realm.Class_Names;
+import com.ssgb.easyattendance.realm.Class_Names;
 
 import java.util.Objects;
 

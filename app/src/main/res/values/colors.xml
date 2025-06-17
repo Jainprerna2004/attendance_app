@@ -16,5 +16,16 @@
     <color name="green_new">#11D853</color>
     <color name="red_new">#FB0000</color>
 
+    <color name="background_light">#FAFAFA</color>
+
+    <color name="card_blue">#E3F0FF</color>
+
+    <color name="black">#000000</color>
+
+    <!-- Text Colors - Consistent for both light and dark modes -->
+    <color name="text_primary">#212121</color>
+    <color name="text_secondary">#757575</color>
+    <color name="text_tertiary">#9E9E9E</color>
+    <color name="text_hint">#BDBDBD</color>
 
 </resources>

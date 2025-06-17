@@ -1,4 +1,4 @@
-package com.ajstudios.easyattendance;
+package com.ssgb.easyattendance;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -9,19 +9,22 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.ajstudios.easyattendance.Adapter.ReportsAdapter;
-import com.ajstudios.easyattendance.realm.Attendance_Reports;
+import com.ssgb.easyattendance.Adapter.ReportsAdapter;
+import com.ssgb.easyattendance.realm.Attendance_Reports;
 
+import java.util.List;
 import java.util.Objects;
 
-import io.realm.Realm;
-import io.realm.RealmResults;
+import androidx.room.Room;
+import com.ssgb.easyattendance.realm.AppDatabase;
+import com.ssgb.easyattendance.realm.AttendanceReportsDao;
 
 public class Reports_Activity extends AppCompatActivity {
 
     String subjectName, className, room_ID;
     RecyclerView recyclerView;
-    Realm realm;
+    AppDatabase db;
+    AttendanceReportsDao attendanceReportsDao;
 
     ReportsAdapter mAdapter;
 
@@ -29,7 +32,8 @@ public class Reports_Activity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_reports);
-        Realm.init(this);
+        db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "easy-attendance-db").allowMainThreadQueries().build();
+        attendanceReportsDao = db.attendanceReportsDao();
         subjectName = getIntent().getStringExtra("subject_name");
         className = getIntent().getStringExtra("class_name");
         room_ID = getIntent().getStringExtra("room_ID");
@@ -42,20 +46,14 @@ public class Reports_Activity extends AppCompatActivity {
         toolbar.setSubtitle(className);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
 
-
-        RealmResults<Attendance_Reports> results;
-        realm = Realm.getDefaultInstance();
-        results = realm.where(Attendance_Reports.class)
-                .equalTo("classId", room_ID)
-                .findAll();
-
+        List<Attendance_Reports> results = attendanceReportsDao.getByClassId(room_ID);
 
         recyclerView.setHasFixedSize(true);
         GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 4);
 
         recyclerView.setLayoutManager(gridLayoutManager);
 
-        mAdapter = new ReportsAdapter( results,Reports_Activity.this, room_ID);
+        mAdapter = new ReportsAdapter(results, Reports_Activity.this, room_ID);
         recyclerView.setAdapter(mAdapter);
 
     }

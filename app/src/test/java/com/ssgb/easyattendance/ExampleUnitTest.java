@@ -1,4 +1,4 @@
-package com.ajstudios.easyattendance;
+package com.ssgb.easyattendance;
 
 import org.junit.Test;
 

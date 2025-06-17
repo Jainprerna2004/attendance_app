@@ -1,4 +1,4 @@
-package com.ajstudios.easyattendance.Adapter;
+package com.ssgb.easyattendance.Adapter;
 
 import android.app.Activity;
 import android.view.LayoutInflater;
@@ -6,33 +6,22 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
-import com.ajstudios.easyattendance.R;
-import com.ajstudios.easyattendance.realm.Class_Names;
-import com.ajstudios.easyattendance.realm.Students_List;
-import com.ajstudios.easyattendance.viewholders.ViewHolder;
+import com.ssgb.easyattendance.R;
+import com.ssgb.easyattendance.realm.Class_Names;
+import com.ssgb.easyattendance.viewholders.ViewHolder;
 
-import io.realm.Realm;
-import io.realm.RealmChangeListener;
-import io.realm.RealmRecyclerViewAdapter;
-import io.realm.RealmResults;
+import java.util.List;
 
-public class ClassListAdapter extends RealmRecyclerViewAdapter<Class_Names, ViewHolder> {
+public class ClassListAdapter extends RecyclerView.Adapter<ViewHolder> {
 
     private final Activity mActivity;
-    RealmResults<Class_Names> mList;
+    List<Class_Names> mList;
 
-    Realm realm;
-    RealmChangeListener realmChangeListener;
-
-    public ClassListAdapter(RealmResults<Class_Names> list, Activity context) {
-
-        super(context, list, true);
-        Realm realm = Realm.getDefaultInstance();
+    public ClassListAdapter(List<Class_Names> list, Activity context) {
         mActivity = context;
         mList = list;
-
-
     }
 
     @NonNull
@@ -45,27 +34,10 @@ public class ClassListAdapter extends RealmRecyclerViewAdapter<Class_Names, View
     @Override
     public void onBindViewHolder(@NonNull final ViewHolder holder, int position) {
 
-        final Class_Names temp = getItem(position);
-
-        Realm.init(mActivity);
-        realm = Realm.getDefaultInstance();
-        realmChangeListener = new RealmChangeListener() {
-            @Override
-            public void onChange(Object o) {
-                long count = realm.where(Students_List.class)
-                        .equalTo("class_id", temp.getId())
-                        .count();
-                holder.total_students.setText("Students : " + count);
-            }
-        };
-        realm.addChangeListener(realmChangeListener);
-
-        long count = realm.where(Students_List.class)
-                .equalTo("class_id", temp.getId())
-                .count();
-        holder.total_students.setText("Students : " + count);
+        final Class_Names temp = mList.get(position);
         holder.class_name.setText(temp.getName_class());
         holder.subject_name.setText(temp.getName_subject());
+        holder.total_students.setText("");
 
         switch (temp.getPosition_bg()) {
             case "0":
@@ -97,5 +69,10 @@ public class ClassListAdapter extends RealmRecyclerViewAdapter<Class_Names, View
                 break;
         }
 
+    }
+
+    @Override
+    public int getItemCount() {
+        return mList != null ? mList.size() : 0;
     }
 }

@@ -1,4 +1,4 @@
-package com.ajstudios.easyattendance;
+package com.ssgb.easyattendance;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
@@ -11,14 +11,18 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Button;
 
-import com.ajstudios.easyattendance.Adapter.ClassListAdapter;
-import com.ajstudios.easyattendance.realm.Class_Names;
+import com.ssgb.easyattendance.Adapter.ClassListAdapter;
+import com.ssgb.easyattendance.realm.Class_Names;
 import com.google.android.material.bottomappbar.BottomAppBar;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-import io.realm.Realm;
-import io.realm.RealmResults;
+import androidx.room.Room;
+import com.ssgb.easyattendance.realm.AppDatabase;
+import com.ssgb.easyattendance.realm.ClassNamesDao;
+import java.util.List;
+import com.google.firebase.auth.FirebaseAuth;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -26,17 +30,20 @@ public class MainActivity extends AppCompatActivity {
     FloatingActionButton fab_main;
     RecyclerView recyclerView;
     TextView sample;
+    private Button logoutButton;
 
     ClassListAdapter mAdapter;
 
-    Realm realm;
+    AppDatabase db;
+    ClassNamesDao classNamesDao;
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Realm.init(this);
+        db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "easy-attendance-db").allowMainThreadQueries().build();
+        classNamesDao = db.classNamesDao();
 
         getWindow().setEnterTransition(null);
 
@@ -50,13 +57,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        realm = Realm.getDefaultInstance();
-
-        RealmResults<Class_Names> results;
-
-        results = realm.where(Class_Names.class)
-                .findAll();
-
+        List<Class_Names> results = classNamesDao.getAll();
 
         sample = findViewById(R.id.classes_sample);
         recyclerView = findViewById(R.id.recyclerView_main);
@@ -66,16 +67,22 @@ public class MainActivity extends AppCompatActivity {
 
         recyclerView.setLayoutManager(staggeredGridLayoutManager);
 
-        mAdapter = new ClassListAdapter( results,MainActivity.this);
+        mAdapter = new ClassListAdapter(results, MainActivity.this);
         recyclerView.setAdapter(mAdapter);
 
-
+        logoutButton = findViewById(R.id.buttonLogout);
+        logoutButton.setOnClickListener(v -> {
+            FirebaseAuth.getInstance().signOut();
+            Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            finish();
+        });
     }
 
     @Override
     protected void onResume() {
-        realm.refresh();
-        realm.setAutoRefresh(true);
         super.onResume();
+        // Optionally refresh data here if needed
     }
 }

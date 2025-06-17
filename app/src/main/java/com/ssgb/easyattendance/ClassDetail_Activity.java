@@ -1,4 +1,4 @@
-package com.ajstudios.easyattendance;
+package com.ssgb.easyattendance;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
@@ -8,7 +8,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
-import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -28,12 +27,13 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.ajstudios.easyattendance.Adapter.StudentsListAdapter;
-import com.ajstudios.easyattendance.realm.Attendance_Reports;
-import com.ajstudios.easyattendance.realm.Attendance_Students_List;
-import com.ajstudios.easyattendance.realm.Students_List;
+import com.ssgb.easyattendance.Adapter.StudentsListAdapter;
+import com.ssgb.easyattendance.realm.Attendance_Reports;
+import com.ssgb.easyattendance.realm.Attendance_Students_List;
+import com.ssgb.easyattendance.realm.Students_List;
 import com.google.android.material.appbar.CollapsingToolbarLayout;
-import com.yarolegovich.lovelydialog.LovelyCustomDialog;
+import com.afollestad.materialdialogs.MaterialDialog;
+import com.afollestad.materialdialogs.customview.customView;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -42,12 +42,11 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.TimeZone;
 
-import io.realm.Realm;
-import io.realm.RealmAsyncTask;
-import io.realm.RealmChangeListener;
-import io.realm.RealmList;
-import io.realm.RealmResults;
-import io.realm.Sort;
+import androidx.room.Room;
+import com.ssgb.easyattendance.realm.AppDatabase;
+import com.ssgb.easyattendance.realm.StudentsListDao;
+import com.ssgb.easyattendance.realm.AttendanceReportsDao;
+import com.ssgb.easyattendance.realm.AttendanceStudentsListDao;
 
 public class ClassDetail_Activity extends AppCompatActivity {
 
@@ -64,15 +63,15 @@ public class ClassDetail_Activity extends AppCompatActivity {
 
     public static final String TAG = "ClassDetail_Activity";
 
-    Realm realm;
-    RealmAsyncTask transaction;
-    RealmChangeListener realmChangeListener;
+    AppDatabase db;
+    StudentsListDao studentsListDao;
+    AttendanceReportsDao attendanceReportsDao;
+    AttendanceStudentsListDao attendanceStudentsListDao;
 
     private Handler handler = new Handler();
     StudentsListAdapter mAdapter;
 
     ProgressBar progressBar;
-    Dialog lovelyCustomDialog;
 
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -82,7 +81,10 @@ public class ClassDetail_Activity extends AppCompatActivity {
         setContentView(R.layout.activity_class_detail_);
 
         getWindow().setExitTransition(null);
-        Realm.init(this);
+        db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "easy-attendance-db").allowMainThreadQueries().build();
+        studentsListDao = db.studentsListDao();
+        attendanceReportsDao = db.attendanceReportsDao();
+        attendanceStudentsListDao = db.attendanceStudentsListDao();
 
         final String theme = getIntent().getStringExtra("theme");
         class_Name = getIntent().getStringExtra("className");
@@ -143,7 +145,7 @@ public class ClassDetail_Activity extends AppCompatActivity {
         Runnable r = new Runnable() {
             @Override
             public void run() {
-                RealmInit();
+                RoomInit();
                 progressBar.setVisibility(View.GONE);
             }
         };
@@ -155,9 +157,7 @@ public class ClassDetail_Activity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                long count = realm.where(Students_List.class)
-                        .equalTo("class_id", room_ID)
-                        .count();
+                int count = studentsListDao.countByClassId(room_ID);
                 final String size, size2;
                 final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(ClassDetail_Activity.this);
                 size = String.valueOf(preferences.getAll().size());
@@ -197,36 +197,35 @@ public class ClassDetail_Activity extends AppCompatActivity {
                     reg_no = view1.findViewById(R.id.regNo_student_popup);
                     mobile_no = view1.findViewById(R.id.mobileNo_student_popup);
 
-                    lovelyCustomDialog = new LovelyCustomDialog(ClassDetail_Activity.this)
-                            .setView(view1)
-                            .setTopColorRes(R.color.theme_light)
-                            .setTitle("Add Student")
-                            .setIcon(R.drawable.ic_baseline_person_add_24)
-                            .setCancelable(false)
-                            .setListener(R.id.add_btn_popup, new View.OnClickListener() {
-                                @Override
-                                public void onClick(View view) {
+                    MaterialDialog dialog = new MaterialDialog(ClassDetail_Activity.this)
+                            .title(null, "Add Student")
+                            .icon(R.drawable.ic_baseline_person_add_24)
+                            .customView(view1, noVerticalPadding = true)
+                            .cancelable(false);
 
-                                    String name = student_name.getText().toString();
-                                    String regNo = reg_no.getText().toString();
-                                    String mobNo = mobile_no.getText().toString();
+                    dialog.show();
 
-                                    if (isValid()){
-                                    addStudentMethod(name, regNo, mobNo);
-                                    }else{
-                                        Toast.makeText(ClassDetail_Activity.this, "Please fill all the details..", Toast.LENGTH_SHORT).show();
-                                    }
+                    view1.findViewById(R.id.add_btn_popup).setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            String name = student_name.getText().toString();
+                            String regNo = reg_no.getText().toString();
+                            String mobNo = mobile_no.getText().toString();
+                            if (isValid()) {
+                                addStudentMethod(name, regNo, mobNo);
+                                dialog.dismiss();
+                            } else {
+                                Toast.makeText(ClassDetail_Activity.this, "Please fill all the details..", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
 
-
-                                }
-                            })
-                            .setListener(R.id.cancel_btn_popup, new View.OnClickListener() {
-                                @Override
-                                public void onClick(View view) {
-                                    lovelyCustomDialog.dismiss();
-                                }
-                            })
-                            .show();
+                    view1.findViewById(R.id.cancel_btn_popup).setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            dialog.dismiss();
+                        }
+                    });
 
             }
         });
@@ -239,137 +238,64 @@ public class ClassDetail_Activity extends AppCompatActivity {
 
     }
 
-    public void RealmInit(){
-
-        Realm.init(this);
-        realm = Realm.getDefaultInstance();
+    public void RoomInit(){
         final String date = new SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault()).format(new Date());
-        realmChangeListener = new RealmChangeListener() {
-            @Override
-            public void onChange(Object o) {
-                long count = realm.where(Students_List.class)
-                        .equalTo("class_id", room_ID)
-                        .count();
-
-                total_students.setText("Total Students : " + count);
-
-                long reports_size = realm.where(Attendance_Reports.class)
-                        .equalTo("date_and_classID", date+room_ID)
-                        .count();
-                if (!(reports_size==0)){
-                    layout_attendance_taken.setVisibility(View.VISIBLE);
-                    submit_btn.setVisibility(View.GONE);
-                }else {
-                    layout_attendance_taken.setVisibility(View.GONE);
-                    submit_btn.setVisibility(View.VISIBLE);
-
-                    if (!(count==0)){
-                        submit_btn.setVisibility(View.VISIBLE);
-                        place_holder.setVisibility(View.GONE);
-                    }else if (count==0) {
-                        submit_btn.setVisibility(View.GONE);
-                        place_holder.setVisibility(View.VISIBLE);
-                    }
-
-                }
-
-            }
-        };
-        realm.addChangeListener(realmChangeListener);
-        RealmResults<Students_List> students ;
-        students = realm.where(Students_List.class)
-                .equalTo("class_id", room_ID)
-                .sort("name_student", Sort.ASCENDING)
-                .findAllAsync();
-
-
-        long count = realm.where(Students_List.class)
-                .equalTo("class_id", room_ID)
-                .count();
-        long reports_size = realm.where(Attendance_Reports.class)
-                .equalTo("date_and_classID", date+room_ID)
-                .count();
-
-
-        if (!(reports_size==0)){
+        int count = studentsListDao.countByClassId(room_ID);
+        Attendance_Reports report = attendanceReportsDao.getByDateAndClassId(date+room_ID);
+        if (report != null) {
             layout_attendance_taken.setVisibility(View.VISIBLE);
             submit_btn.setVisibility(View.GONE);
-        }else if (reports_size==0) {
-
+        } else {
             layout_attendance_taken.setVisibility(View.GONE);
             submit_btn.setVisibility(View.VISIBLE);
-
-            if (!(count==0)){
+            if (count != 0) {
                 submit_btn.setVisibility(View.VISIBLE);
                 place_holder.setVisibility(View.GONE);
-            }else if (count==0){
+            } else {
                 submit_btn.setVisibility(View.GONE);
                 place_holder.setVisibility(View.VISIBLE);
             }
         }
-
-
         total_students.setText("Total Students : " + count);
-
         mRecyclerview.setLayoutManager(new LinearLayoutManager(this));
         String extraClick = "";
-        mAdapter = new StudentsListAdapter( students,ClassDetail_Activity.this, date+room_ID, extraClick);
+        java.util.List<Students_List> students = studentsListDao.getStudentsByClassId(room_ID);
+        mAdapter = new StudentsListAdapter(students, ClassDetail_Activity.this, date+room_ID, extraClick);
         mRecyclerview.setAdapter(mAdapter);
-
     }
 
     public void submitAttendance(){
-
         final ProgressDialog progressDialog = new ProgressDialog(ClassDetail_Activity.this);
         progressDialog.setMessage("Please wait..");
         progressDialog.show();
         final String date = new SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault()).format(new Date());
-                final RealmResults<Attendance_Students_List> list_students ;
-
-                list_students = realm.where(Attendance_Students_List.class)
-                        .equalTo("date_and_classID", date+room_ID)
-                        .sort("studentName", Sort.ASCENDING)
-                        .findAllAsync();
-
-                final RealmList<Attendance_Students_List> list = new RealmList<>();
-                list.addAll(list_students);
-
-                Calendar calendar = Calendar.getInstance(TimeZone.getDefault());
-                final String dateOnly = String.valueOf(calendar.get(Calendar.DATE));
-                @SuppressLint("SimpleDateFormat")
-                final String monthOnly = new SimpleDateFormat("MMM").format(calendar.getTime());
-
-                try {
-                    realm.executeTransaction(new Realm.Transaction() {
-                        @Override
-                        public void execute(Realm realm) {
-                            Attendance_Reports attendance_reports = realm.createObject(Attendance_Reports.class);
-                            attendance_reports.setClassId(room_ID);
-                            attendance_reports.setAttendance_students_lists(list);
-                            attendance_reports.setDate(date);
-                            attendance_reports.setDateOnly(dateOnly);
-                            attendance_reports.setMonthOnly(monthOnly);
-                            attendance_reports.setDate_and_classID(date+room_ID);
-                            attendance_reports.setClassname(class_Name);
-                            attendance_reports.setSubjName(subject_Name);
-
-                        }
-                    });
-                    SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-                    SharedPreferences.Editor editor = preferences.edit();
-                    editor.clear();
-                    editor.commit();
-                    Toast.makeText(ClassDetail_Activity.this, "Attendance Submitted", Toast.LENGTH_SHORT).show();
-                    progressDialog.dismiss();
-
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    progressDialog.dismiss();
-                    Toast.makeText(ClassDetail_Activity.this, "Error Occurred", Toast.LENGTH_SHORT).show();
-                }
-
-
+        java.util.List<Attendance_Students_List> list_students = attendanceStudentsListDao.getByDateAndClassId(date+room_ID);
+        Calendar calendar = Calendar.getInstance(TimeZone.getDefault());
+        final String dateOnly = String.valueOf(calendar.get(Calendar.DATE));
+        @SuppressLint("SimpleDateFormat")
+        final String monthOnly = new SimpleDateFormat("MMM").format(calendar.getTime());
+        try {
+            Attendance_Reports attendance_reports = new Attendance_Reports();
+            attendance_reports.setClassId(room_ID);
+            attendance_reports.setAttendance_students_lists(list_students);
+            attendance_reports.setDate(date);
+            attendance_reports.setDateOnly(dateOnly);
+            attendance_reports.setMonthOnly(monthOnly);
+            attendance_reports.setDate_and_classID(date+room_ID);
+            attendance_reports.setClassname(class_Name);
+            attendance_reports.setSubjName(subject_Name);
+            attendanceReportsDao.insert(attendance_reports);
+            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.clear();
+            editor.commit();
+            Toast.makeText(ClassDetail_Activity.this, "Attendance Submitted", Toast.LENGTH_SHORT).show();
+            progressDialog.dismiss();
+        } catch (Exception e) {
+            e.printStackTrace();
+            progressDialog.dismiss();
+            Toast.makeText(ClassDetail_Activity.this, "Error Occurred", Toast.LENGTH_SHORT).show();
+        }
     }
 
 
@@ -388,42 +314,25 @@ public class ClassDetail_Activity extends AppCompatActivity {
     }
 
     public void addStudentMethod(final String studentName, final String regNo, final String mobileNo) {
-
         final ProgressDialog progressDialog = new ProgressDialog(ClassDetail_Activity.this);
         progressDialog.setMessage("Creating class..");
         progressDialog.show();
-
-        transaction = realm.executeTransactionAsync(new Realm.Transaction() {
-            @Override
-            public void execute(Realm realm) {
-                Students_List students_list = realm.createObject(Students_List.class);
-                String id = studentName+regNo;
-                students_list.setId(id);
-                students_list.setName_student(studentName);
-                students_list.setRegNo_student(regNo);
-                students_list.setMobileNo_student(mobileNo);
-                students_list.setClass_id(room_ID);
-
-            }
-        }, new Realm.Transaction.OnSuccess() {
-            @Override
-            public void onSuccess() {
-                progressDialog.dismiss();
-                lovelyCustomDialog.dismiss();
-                realm.refresh();
-                realm.setAutoRefresh(true);
-                Toast.makeText(ClassDetail_Activity.this, "Student Added", Toast.LENGTH_SHORT).show();
-
-            }
-        }, new Realm.Transaction.OnError() {
-            @Override
-            public void onError(Throwable error) {
-                progressDialog.dismiss();
-                lovelyCustomDialog.dismiss();
-                Toast.makeText(ClassDetail_Activity.this, "Error!", Toast.LENGTH_SHORT).show();
-            }
-        });
-
+        try {
+            Students_List students_list = new Students_List();
+            String id = studentName+regNo;
+            students_list.setId(id);
+            students_list.setName_student(studentName);
+            students_list.setRegNo_student(regNo);
+            students_list.setMobileNo_student(mobileNo);
+            students_list.setClass_id(room_ID);
+            studentsListDao.insert(students_list);
+            progressDialog.dismiss();
+            Toast.makeText(ClassDetail_Activity.this, "Student Added", Toast.LENGTH_SHORT).show();
+            RoomInit(); // Refresh list
+        } catch (Exception e) {
+            progressDialog.dismiss();
+            Toast.makeText(ClassDetail_Activity.this, "Error!", Toast.LENGTH_SHORT).show();
+        }
     }
 
     public boolean isValid(){

@@ -1,18 +1,41 @@
-package com.ajstudios.easyattendance.realm;
+package com.ssgb.easyattendance.realm;
 
-import io.realm.RealmList;
-import io.realm.RealmObject;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+import androidx.room.ColumnInfo;
+import androidx.room.TypeConverters;
+import java.util.List;
+import androidx.annotation.NonNull;
 
-public class Attendance_Reports extends RealmObject {
+@Entity(tableName = "attendance_reports")
+public class Attendance_Reports {
 
+    @ColumnInfo(name = "date")
     String date;
+
+    @ColumnInfo(name = "monthOnly")
     String monthOnly;
+
+    @ColumnInfo(name = "dateOnly")
     String dateOnly;
+
+    @ColumnInfo(name = "classId")
     String classId;
+
+    @PrimaryKey
+    @ColumnInfo(name = "date_and_classID")
+    @NonNull
     String date_and_classID;
+
+    @ColumnInfo(name = "classname")
     String classname;
+
+    @ColumnInfo(name = "subjName")
     String subjName;
-    RealmList<Attendance_Students_List> attendance_students_lists;
+
+    @TypeConverters(Converters.class)
+    @ColumnInfo(name = "attendance_students_lists")
+    List<Attendance_Students_List> attendance_students_lists;
 
     public String getDate() {
         return date;
@@ -30,11 +53,11 @@ public class Attendance_Reports extends RealmObject {
         this.classId = classId;
     }
 
-    public RealmList<Attendance_Students_List> getAttendance_students_lists() {
+    public List<Attendance_Students_List> getAttendance_students_lists() {
         return attendance_students_lists;
     }
 
-    public void setAttendance_students_lists(RealmList<Attendance_Students_List> attendance_students_lists) {
+    public void setAttendance_students_lists(List<Attendance_Students_List> attendance_students_lists) {
         this.attendance_students_lists = attendance_students_lists;
     }
 

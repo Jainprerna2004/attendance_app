@@ -1,4 +1,4 @@
-package com.ajstudios.easyattendance.viewholders;
+package com.ssgb.easyattendance.viewholders;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -13,11 +13,11 @@ import androidx.core.app.ActivityOptionsCompat;
 import androidx.core.util.Pair;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.ajstudios.easyattendance.ClassDetail_Activity;
-import com.ajstudios.easyattendance.R;
-import com.ajstudios.easyattendance.realm.Class_Names;
+import com.ssgb.easyattendance.ClassDetail_Activity;
+import com.ssgb.easyattendance.R;
+import com.ssgb.easyattendance.realm.Class_Names;
 
-import io.realm.RealmResults;
+import java.util.List;
 
 import static androidx.core.app.ActivityOptionsCompat.makeSceneTransitionAnimation;
 
@@ -33,9 +33,9 @@ public class ViewHolder extends RecyclerView.ViewHolder {
 
 
     public Activity mActivity;
-    RealmResults<Class_Names> mList;
+    List<Class_Names> mList;
 
-    public ViewHolder(@NonNull final View itemView, Activity MainActivity, RealmResults<Class_Names> list) {
+    public ViewHolder(@NonNull final View itemView, Activity MainActivity, List<Class_Names> list) {
         super(itemView);
 
         class_name = itemView.findViewById(R.id.className_adapter);

@@ -1,4 +1,4 @@
-package com.ajstudios.easyattendance.Adapter;
+package com.ssgb.easyattendance.Adapter;
 
 import android.app.Activity;
 import android.content.SharedPreferences;
@@ -8,29 +8,24 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
-import com.ajstudios.easyattendance.R;
-import com.ajstudios.easyattendance.realm.Students_List;
-import com.ajstudios.easyattendance.viewholders.ViewHolder_students;
+import com.ssgb.easyattendance.R;
+import com.ssgb.easyattendance.realm.Students_List;
+import com.ssgb.easyattendance.viewholders.ViewHolder_students;
 
-import io.realm.Realm;
-import io.realm.RealmRecyclerViewAdapter;
-import io.realm.RealmResults;
+import java.util.List;
 
-public class StudentsListAdapter extends RealmRecyclerViewAdapter<Students_List, ViewHolder_students> {
+public class StudentsListAdapter extends RecyclerView.Adapter<ViewHolder_students> {
 
     private final Activity mActivity;
-    RealmResults<Students_List> mList;
+    List<Students_List> mList;
     String stuID, mroomID;
-    Realm realm = Realm.getDefaultInstance();
 
-    public StudentsListAdapter(RealmResults<Students_List> list, Activity context, String roomID, String extraClick) {
-
-        super(context, list, true);
-
+    public StudentsListAdapter(List<Students_List> list, Activity context, String roomID, String extraClick) {
         mActivity = context;
         mList = list;
-        mroomID =roomID;
+        mroomID = roomID;
     }
 
     @NonNull
@@ -42,7 +37,7 @@ public class StudentsListAdapter extends RealmRecyclerViewAdapter<Students_List,
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder_students holder, final int position) {
-        Students_List temp = getItem(position);
+        Students_List temp = mList.get(position);
         holder.student_name.setText(temp.getName_student());
         holder.student_regNo.setText(temp.getRegNo_student());
 
@@ -59,6 +54,11 @@ public class StudentsListAdapter extends RealmRecyclerViewAdapter<Students_List,
                 holder.radioButton_absent.setChecked(true);
             }
         }
+    }
+
+    @Override
+    public int getItemCount() {
+        return mList != null ? mList.size() : 0;
     }
 
 }

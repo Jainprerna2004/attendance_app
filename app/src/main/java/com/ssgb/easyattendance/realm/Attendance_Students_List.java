@@ -1,19 +1,36 @@
-package com.ajstudios.easyattendance.realm;
+package com.ssgb.easyattendance.realm;
 
-import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+import androidx.room.ColumnInfo;
+import androidx.annotation.NonNull;
 
-public class Attendance_Students_List extends RealmObject {
+@Entity(tableName = "attendance_students_list")
+public class Attendance_Students_List {
 
+    @ColumnInfo(name = "studentName")
     String studentName;
-    String studentRegNo;
-    String attendance;
-    String mobNo;
-    String classID;
-    String date_and_classID;
-    @PrimaryKey
-    String unique_ID;
 
+    @ColumnInfo(name = "studentRegNo")
+    String studentRegNo;
+
+    @ColumnInfo(name = "attendance")
+    String attendance;
+
+    @ColumnInfo(name = "mobNo")
+    String mobNo;
+
+    @ColumnInfo(name = "classID")
+    String classID;
+
+    @ColumnInfo(name = "date_and_classID")
+    String date_and_classID;
+
+    @PrimaryKey
+    @ColumnInfo(name = "unique_ID")
+    @NonNull
+    String unique_ID;
 
     public String getStudentName() {
         return studentName;

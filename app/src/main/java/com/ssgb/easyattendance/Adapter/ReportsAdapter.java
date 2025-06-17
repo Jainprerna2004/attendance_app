@@ -1,4 +1,4 @@
-package com.ajstudios.easyattendance.Adapter;
+package com.ssgb.easyattendance.Adapter;
 
 import android.app.Activity;
 import android.view.LayoutInflater;
@@ -7,9 +7,9 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 
-import com.ajstudios.easyattendance.R;
-import com.ajstudios.easyattendance.realm.Attendance_Reports;
-import com.ajstudios.easyattendance.viewholders.ViewHolder_reports;
+import com.ssgb.easyattendance.R;
+import com.ssgb.easyattendance.realm.Attendance_Reports;
+import com.ssgb.easyattendance.viewholders.ViewHolder_reports;
 
 import io.realm.Realm;
 import io.realm.RealmRecyclerViewAdapter;

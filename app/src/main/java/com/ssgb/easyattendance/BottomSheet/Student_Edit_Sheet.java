@@ -1,4 +1,4 @@
-package com.ajstudios.easyattendance.BottomSheet;
+package com.ssgb.easyattendance.BottomSheet;
 
 import android.content.Intent;
 import android.net.Uri;
@@ -12,7 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
 
-import com.ajstudios.easyattendance.R;
+import com.ssgb.easyattendance.R;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 public class Student_Edit_Sheet extends BottomSheetDialogFragment {

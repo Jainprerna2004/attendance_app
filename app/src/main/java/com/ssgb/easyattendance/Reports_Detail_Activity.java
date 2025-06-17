@@ -1,4 +1,4 @@
-package com.ajstudios.easyattendance;
+package com.ssgb.easyattendance;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -10,14 +10,15 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 
-import com.ajstudios.easyattendance.Adapter.Reports_Detail_Adapter;
-import com.ajstudios.easyattendance.realm.Attendance_Students_List;
+import com.ssgb.easyattendance.Adapter.Reports_Detail_Adapter;
+import com.ssgb.easyattendance.realm.Attendance_Students_List;
 
+import java.util.List;
 import java.util.Objects;
 
-import io.realm.Realm;
-import io.realm.RealmResults;
-import io.realm.Sort;
+import androidx.room.Room;
+import com.ssgb.easyattendance.realm.AppDatabase;
+import com.ssgb.easyattendance.realm.AttendanceStudentsListDao;
 
 public class Reports_Detail_Activity extends AppCompatActivity {
 
@@ -26,13 +27,15 @@ public class Reports_Detail_Activity extends AppCompatActivity {
 
     TextView subj, className, toolbar_title;
 
-    Realm realm;
+    AppDatabase db;
+    AttendanceStudentsListDao attendanceStudentsListDao;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_reports__detail);
-        Realm.init(this);
-        realm = Realm.getDefaultInstance();
+        db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "easy-attendance-db").allowMainThreadQueries().build();
+        attendanceStudentsListDao = db.attendanceStudentsListDao();
 
         String room_ID = getIntent().getStringExtra("ID");
         String classname = getIntent().getStringExtra("class");
@@ -51,21 +54,15 @@ public class Reports_Detail_Activity extends AppCompatActivity {
         subj.setText(subjName);
         className.setText(classname);
 
-
-
-        RealmResults<Attendance_Students_List> list = realm.where(Attendance_Students_List.class)
-                            .equalTo("date_and_classID", room_ID)
-                            .sort("studentName", Sort.ASCENDING)
-                            .findAllAsync();
-
+        List<Attendance_Students_List> list = attendanceStudentsListDao.getByDateAndClassId(room_ID);
 
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        mAdapter = new Reports_Detail_Adapter( list,Reports_Detail_Activity.this, room_ID);
+        mAdapter = new Reports_Detail_Adapter(list, Reports_Detail_Activity.this, room_ID);
         recyclerView.setAdapter(mAdapter);
-
     }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.only_dot, menu);

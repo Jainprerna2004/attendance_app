@@ -1,13 +1,15 @@
-apply plugin: 'com.android.application'
-apply plugin: 'realm-android'
+plugins {
+    id 'com.android.application'
+    id 'realm-android'
+}
 
 android {
-    compileSdkVersion 29
+    compileSdk 35
 
     defaultConfig {
-        applicationId "com.ajstudios.notesapplication"
-        minSdkVersion 19
-        targetSdkVersion 27
+        applicationId "com.ssgb.easyattendance"
+        minSdk 19
+        targetSdk 35
         versionCode 1
         versionName "1.0"
 
@@ -36,9 +38,22 @@ dependencies {
 
     //External Libraries-------------------
 
-    implementation 'io.realm:android-adapters:1.4.0'
-    implementation 'com.github.ceryle:RadioRealButton:v1.3'
-    implementation 'com.yarolegovich:lovely-dialog:1.1.1'
+    //implementation 'com.github.ceryle:RadioRealButton:v1.3'
+    //implementation 'com.yarolegovich:lovely-dialog:1.1.1'
+    implementation 'com.afollestad.material-dialogs:core:3.3.0'
     implementation 'de.hdodenhof:circleimageview:3.1.0'
 
+    // Room dependencies
+    implementation 'androidx.room:room-runtime:2.6.1'
+    annotationProcessor 'androidx.room:room-compiler:2.6.1'
+    implementation 'androidx.room:room-ktx:2.6.1'
+
+    implementation 'com.google.code.gson:gson:2.10.1'
+
+    implementation platform('com.google.firebase:firebase-bom:32.7.0')
+    implementation 'com.google.firebase:firebase-auth'
+
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
 }
+
+apply plugin: 'com.google.gms.google-services'

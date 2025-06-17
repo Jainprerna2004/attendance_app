@@ -1,14 +1,25 @@
-package com.ajstudios.easyattendance.realm;
+package com.ssgb.easyattendance.realm;
 
-import io.realm.RealmObject;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+import androidx.room.ColumnInfo;
+import androidx.annotation.NonNull;
 
-public class Class_Names extends RealmObject {
+@Entity(tableName = "class_names")
+public class Class_Names {
 
-
+    @PrimaryKey
+    @ColumnInfo(name = "id")
+    @NonNull
     String id;
 
+    @ColumnInfo(name = "name_class")
     String name_class;
+
+    @ColumnInfo(name = "name_subject")
     String name_subject;
+
+    @ColumnInfo(name = "position_bg")
     String position_bg;
 
     public String getId() {

@@ -1,14 +1,28 @@
-package com.ajstudios.easyattendance.realm;
+package com.ssgb.easyattendance.realm;
 
-import io.realm.RealmObject;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+import androidx.room.ColumnInfo;
+import androidx.annotation.NonNull;
 
+@Entity(tableName = "students_list")
+public class Students_List {
 
-public class Students_List extends RealmObject {
-
+    @PrimaryKey
+    @ColumnInfo(name = "id")
+    @NonNull
     String id;
+
+    @ColumnInfo(name = "name_student")
     String name_student;
+
+    @ColumnInfo(name = "regNo_student")
     String regNo_student;
+
+    @ColumnInfo(name = "mobileNo_student")
     String mobileNo_student;
+
+    @ColumnInfo(name = "class_id")
     String class_id;
 
     public String getId() {
@@ -50,6 +64,5 @@ public class Students_List extends RealmObject {
     public void setMobileNo_student(String mobileNo_student) {
         this.mobileNo_student = mobileNo_student;
     }
-
 
 }
