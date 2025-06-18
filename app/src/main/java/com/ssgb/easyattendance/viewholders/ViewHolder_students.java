@@ -33,6 +33,8 @@ public class ViewHolder_students extends RecyclerView.ViewHolder{
 
     public final TextView student_name;
     public final TextView student_regNo;
+    public final TextView student_phone;
+    public final TextView student_attendance;
     public LinearLayout layout;
     public String stuName, regNo, mobileNo, mRoomID;
     public RadioGroup radioGroup;
@@ -46,6 +48,8 @@ public class ViewHolder_students extends RecyclerView.ViewHolder{
 
         student_name = itemView.findViewById(R.id.student_name_adapter);
         student_regNo = itemView.findViewById(R.id.student_regNo_adapter);
+        student_phone = itemView.findViewById(R.id.student_phone_adapter);
+        student_attendance = itemView.findViewById(R.id.student_attendance_adapter);
         radioGroup = itemView.findViewById(R.id.radioGroup);
         radioButton_present = itemView.findViewById(R.id.radio_present);
         radioButton_absent = itemView.findViewById(R.id.radio_absent);
@@ -68,11 +72,11 @@ public class ViewHolder_students extends RecyclerView.ViewHolder{
                 editor.putString(mList.get(getAbsoluteAdapterPosition()).getRegNo_student(), attendance);
                 editor.apply();
                 Attendance_Students_List attendance_students_list = new Attendance_Students_List();
-                attendance_students_list.setStudentName((mList.get(getAbsoluteAdapterPosition()).getName_student()));
+                attendance_students_list.setStudent_name((mList.get(getAbsoluteAdapterPosition()).getName_student()));
                 attendance_students_list.setAttendance(attendance);
-                attendance_students_list.setMobNo((mList.get(getAbsoluteAdapterPosition()).getMobileNo_student()));
-                attendance_students_list.setStudentRegNo(mList.get(getAbsoluteAdapterPosition()).getRegNo_student());
-                attendance_students_list.setClassID(mList.get(getAbsoluteAdapterPosition()).getClass_id());
+                attendance_students_list.setStudent_phone((mList.get(getAbsoluteAdapterPosition()).getMobileNo_student()));
+                attendance_students_list.setStudent_roll_no(mList.get(getAbsoluteAdapterPosition()).getRegNo_student());
+                attendance_students_list.setClass_id(mList.get(getAbsoluteAdapterPosition()).getClass_id());
                 attendance_students_list.setDate_and_classID(mRoomID);
                 attendance_students_list.setUnique_ID(mList.get(getAbsoluteAdapterPosition()).getRegNo_student()+mRoomID);
                 attendanceStudentsListDao.insert(attendance_students_list);
@@ -87,11 +91,11 @@ public class ViewHolder_students extends RecyclerView.ViewHolder{
                 editor.putString(mList.get(getAbsoluteAdapterPosition()).getRegNo_student(), attendance);
                 editor.apply();
                 Attendance_Students_List attendance_students_list = new Attendance_Students_List();
-                attendance_students_list.setStudentName((mList.get(getAbsoluteAdapterPosition()).getName_student()));
+                attendance_students_list.setStudent_name((mList.get(getAbsoluteAdapterPosition()).getName_student()));
                 attendance_students_list.setAttendance(attendance);
-                attendance_students_list.setMobNo((mList.get(getAbsoluteAdapterPosition()).getMobileNo_student()));
-                attendance_students_list.setStudentRegNo(mList.get(getAbsoluteAdapterPosition()).getRegNo_student());
-                attendance_students_list.setClassID(mList.get(getAbsoluteAdapterPosition()).getClass_id());
+                attendance_students_list.setStudent_phone((mList.get(getAbsoluteAdapterPosition()).getMobileNo_student()));
+                attendance_students_list.setStudent_roll_no(mList.get(getAbsoluteAdapterPosition()).getRegNo_student());
+                attendance_students_list.setClass_id(mList.get(getAbsoluteAdapterPosition()).getClass_id());
                 attendance_students_list.setDate_and_classID(mRoomID);
                 attendance_students_list.setUnique_ID(mList.get(getAbsoluteAdapterPosition()).getRegNo_student()+mRoomID);
                 attendanceStudentsListDao.insert(attendance_students_list);
@@ -110,6 +114,17 @@ public class ViewHolder_students extends RecyclerView.ViewHolder{
             }
         });
 
+    }
+
+    public void bind(Attendance_Students_List student) {
+        student_name.setText(student.getStudent_name());
+        student_regNo.setText(student.getStudent_roll_no());
+        student_phone.setText(student.getStudent_phone());
+        student_attendance.setText(student.getAttendance());
+    }
+
+    public void updateAttendance(String status) {
+        student_attendance.setText(status);
     }
 
 }

@@ -1,76 +1,86 @@
 package com.ssgb.easyattendance;
 
+import android.os.Bundle;
+import android.view.MenuItem;
+import android.widget.TextView;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.lifecycle.LiveData;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
-
 import com.ssgb.easyattendance.Adapter.ReportsAdapter;
-import com.ssgb.easyattendance.realm.Attendance_Reports;
+import com.ssgb.easyattendance.database.AppDatabase;
+import com.ssgb.easyattendance.database.entities.AttendanceReports;
 
 import java.util.List;
-import java.util.Objects;
-
-import androidx.room.Room;
-import com.ssgb.easyattendance.realm.AppDatabase;
-import com.ssgb.easyattendance.realm.AttendanceReportsDao;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Reports_Activity extends AppCompatActivity {
-
-    String subjectName, className, room_ID;
-    RecyclerView recyclerView;
-    AppDatabase db;
-    AttendanceReportsDao attendanceReportsDao;
-
-    ReportsAdapter mAdapter;
+    private TextView className, subjectName;
+    private RecyclerView recyclerView;
+    private ReportsAdapter adapter;
+    private AppDatabase db;
+    private ExecutorService executorService;
+    private String room_ID;
+    private String classname;
+    private String subjName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_reports);
-        db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "easy-attendance-db").allowMainThreadQueries().build();
-        attendanceReportsDao = db.attendanceReportsDao();
-        subjectName = getIntent().getStringExtra("subject_name");
-        className = getIntent().getStringExtra("class_name");
-        room_ID = getIntent().getStringExtra("room_ID");
 
-        recyclerView = findViewById(R.id.recyclerView_reports);
-
-        Toolbar toolbar = findViewById(R.id.toolbar_reports);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        toolbar.setTitle(subjectName);
-        toolbar.setSubtitle(className);
-        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        List<Attendance_Reports> results = attendanceReportsDao.getByClassId(room_ID);
+        room_ID = getIntent().getStringExtra("room_ID");
+        classname = getIntent().getStringExtra("classname");
+        subjName = getIntent().getStringExtra("subjName");
 
-        recyclerView.setHasFixedSize(true);
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 4);
+        className = findViewById(R.id.class_name);
+        subjectName = findViewById(R.id.subject_name);
+        recyclerView = findViewById(R.id.recyclerView);
 
-        recyclerView.setLayoutManager(gridLayoutManager);
+        className.setText(classname);
+        subjectName.setText(subjName);
 
-        mAdapter = new ReportsAdapter(results, Reports_Activity.this, room_ID);
-        recyclerView.setAdapter(mAdapter);
+        db = AppDatabase.getInstance(this);
+        executorService = Executors.newSingleThreadExecutor();
 
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        adapter = new ReportsAdapter(this, null);
+        recyclerView.setAdapter(adapter);
+
+        loadReports();
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.only_dot, menu);
-        return true;
+    private void loadReports() {
+        executorService.execute(() -> {
+            LiveData<List<AttendanceReports>> reportsLiveData = db.attendanceReportsDao().getReportsByClassId(room_ID);
+            reportsLiveData.observe(this, reports -> {
+                if (reports != null) {
+                    adapter.updateList(reports);
+                }
+            });
+        });
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if(item.getItemId()==android.R.id.home)
-        {
+        if (item.getItemId() == android.R.id.home) {
             finish();
+            return true;
         }
-
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        executorService.shutdown();
     }
 }

@@ -1,88 +1,89 @@
 package com.ssgb.easyattendance;
 
-import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.StaggeredGridLayoutManager;
-
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
-import android.widget.TextView;
 import android.widget.Button;
 
-import com.ssgb.easyattendance.Adapter.ClassListAdapter;
-import com.ssgb.easyattendance.realm.Class_Names;
-import com.google.android.material.bottomappbar.BottomAppBar;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.lifecycle.LiveData;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-import androidx.room.Room;
-import com.ssgb.easyattendance.realm.AppDatabase;
-import com.ssgb.easyattendance.realm.ClassNamesDao;
+import com.ssgb.easyattendance.Adapter.ClassAdapter;
+import com.ssgb.easyattendance.Adapter.ClassListAdapter;
+import com.ssgb.easyattendance.database.AppDatabase;
+import com.ssgb.easyattendance.database.entities.ClassNames;
+
 import java.util.List;
-import com.google.firebase.auth.FirebaseAuth;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity {
+    private RecyclerView recyclerView;
+    private ClassListAdapter adapter;
+    private Button addClass;
+    private AppDatabase db;
+    private ExecutorService executorService;
 
-    BottomAppBar bottomAppBar;
-    FloatingActionButton fab_main;
-    RecyclerView recyclerView;
-    TextView sample;
-    private Button logoutButton;
-
-    ClassListAdapter mAdapter;
-
-    AppDatabase db;
-    ClassNamesDao classNamesDao;
-
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "easy-attendance-db").allowMainThreadQueries().build();
-        classNamesDao = db.classNamesDao();
 
-        getWindow().setEnterTransition(null);
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setTitle("Classes");
 
-        bottomAppBar = findViewById(R.id.bottomAppBar);
-        fab_main = findViewById(R.id.fab_main);
-        fab_main.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this, Insert_class_Activity.class);
-                startActivity(intent);
-            }
-        });
+        recyclerView = findViewById(R.id.recyclerView);
+        addClass = findViewById(R.id.add_class);
 
-        List<Class_Names> results = classNamesDao.getAll();
+        db = AppDatabase.getInstance(this);
+        executorService = Executors.newSingleThreadExecutor();
 
-        sample = findViewById(R.id.classes_sample);
-        recyclerView = findViewById(R.id.recyclerView_main);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        adapter = new ClassAdapter(this, null);
+        recyclerView.setAdapter(adapter);
 
-        recyclerView.setHasFixedSize(true);
-        StaggeredGridLayoutManager staggeredGridLayoutManager = new StaggeredGridLayoutManager(2, LinearLayoutManager.VERTICAL);
+        loadClasses();
 
-        recyclerView.setLayoutManager(staggeredGridLayoutManager);
-
-        mAdapter = new ClassListAdapter(results, MainActivity.this);
-        recyclerView.setAdapter(mAdapter);
-
-        logoutButton = findViewById(R.id.buttonLogout);
-        logoutButton.setOnClickListener(v -> {
-            FirebaseAuth.getInstance().signOut();
-            Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        addClass.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, Insert_class_Activity.class);
             startActivity(intent);
-            finish();
+        });
+    }
+
+    private void loadClasses() {
+        executorService.execute(() -> {
+            LiveData<List<ClassNames>> classesLiveData = db.classNamesDao().getAllClasses();
+            classesLiveData.observe(this, classes -> {
+                if (classes != null) {
+                    adapter.updateList(classes);
+                }
+            });
         });
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        // Optionally refresh data here if needed
+        loadClasses();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            finish();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        executorService.shutdown();
     }
 }

@@ -1,10 +1,10 @@
 package com.ssgb.easyattendance.realm;
 
 import androidx.room.Dao;
+import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
 import androidx.room.Update;
-import androidx.room.Delete;
 import java.util.List;
 
 @Dao
@@ -18,12 +18,12 @@ public interface AttendanceStudentsListDao {
     @Delete
     void delete(Attendance_Students_List attendanceStudent);
 
-    @Query("SELECT * FROM attendance_students_list WHERE classID = :classId ORDER BY studentName ASC")
+    @Query("SELECT * FROM attendance_students_list WHERE class_id = :classId")
     List<Attendance_Students_List> getByClassId(String classId);
 
     @Query("SELECT * FROM attendance_students_list WHERE date_and_classID = :dateAndClassId")
     List<Attendance_Students_List> getByDateAndClassId(String dateAndClassId);
 
     @Query("SELECT * FROM attendance_students_list")
-    List<Attendance_Students_List> getAll();
+    List<Attendance_Students_List> getAllStudents();
 } 

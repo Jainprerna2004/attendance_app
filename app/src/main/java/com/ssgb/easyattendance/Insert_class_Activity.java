@@ -1,127 +1,84 @@
 package com.ssgb.easyattendance;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-
-import android.annotation.SuppressLint;
-import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.ssgb.easyattendance.realm.Class_Names;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
-import java.util.Objects;
+import com.ssgb.easyattendance.database.AppDatabase;
+import com.ssgb.easyattendance.database.entities.ClassNames;
 
-import co.ceryle.radiorealbutton.library.RadioRealButton;
-import co.ceryle.radiorealbutton.library.RadioRealButtonGroup;
-import io.realm.Realm;
-import io.realm.RealmAsyncTask;
+import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Insert_class_Activity extends AppCompatActivity {
+    private EditText className, subjectName;
+    private Button createClass;
+    private AppDatabase db;
+    private ExecutorService executorService;
 
-    Button create_button;
-    EditText _className;
-    EditText _subjectName;
-
-    Realm realm;
-    RealmAsyncTask transaction;
-
-    private  String position_bg = "0";
-
-    @SuppressLint("UseCompatLoadingForDrawables")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_insert_class_);
+        setContentView(R.layout.activity_insert_class);
 
-        Toolbar toolbar = findViewById(R.id.toolbar_insert_class);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setTitle("Create Class");
 
-        create_button = findViewById(R.id.button_createClass);
-        _className = findViewById(R.id.className_createClass);
-        _subjectName = findViewById(R.id.subjectName_createClass);
+        className = findViewById(R.id.class_name);
+        subjectName = findViewById(R.id.subject_name);
+        createClass = findViewById(R.id.create_class);
 
-        Realm.init(this);
-        realm = Realm.getDefaultInstance();
+        db = AppDatabase.getInstance(this);
+        executorService = Executors.newSingleThreadExecutor();
 
-        final RadioRealButton button1 = (RadioRealButton) findViewById(R.id.button1);
-        final RadioRealButton button2 = (RadioRealButton) findViewById(R.id.button2);
-        final RadioRealButton button3 = (RadioRealButton) findViewById(R.id.button3);
-        final RadioRealButton button4 = (RadioRealButton) findViewById(R.id.button4);
-        final RadioRealButton button5 = (RadioRealButton) findViewById(R.id.button5);
-        final RadioRealButton button6 = (RadioRealButton) findViewById(R.id.button6);
+        createClass.setOnClickListener(v -> {
+            String class_name = className.getText().toString();
+            String subj_name = subjectName.getText().toString();
 
-        RadioRealButtonGroup group = (RadioRealButtonGroup) findViewById(R.id.group);
-        group.setOnClickedButtonPosition(new RadioRealButtonGroup.OnClickedButtonPosition() {
-            @Override
-            public void onClickedButtonPosition(int position) {
-                position_bg = String.valueOf(position);
+            if (class_name.isEmpty() || subj_name.isEmpty()) {
+                Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+                return;
             }
+
+            createClass(class_name, subj_name);
         });
-
-        create_button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                if (isValid()) {
-
-                    final ProgressDialog progressDialog = new ProgressDialog(Insert_class_Activity.this);
-                    progressDialog.setMessage("Creating class..");
-                    progressDialog.show();
-
-                    transaction = realm.executeTransactionAsync(new Realm.Transaction() {
-                        @Override
-                        public void execute(Realm realm) {
-                            Class_Names class_name = realm.createObject(Class_Names.class);
-                            String id = _className.getText().toString() + _subjectName.getText().toString();
-                            class_name.setId(id);
-                            class_name.setName_class(_className.getText().toString());
-                            class_name.setName_subject(_subjectName.getText().toString());
-                            class_name.setPosition_bg(position_bg);
-                        }
-                    }, new Realm.Transaction.OnSuccess() {
-                        @Override
-                        public void onSuccess() {
-                            progressDialog.dismiss();
-                            Toast.makeText(Insert_class_Activity.this, "Successfully created", Toast.LENGTH_SHORT).show();
-                            finish();
-                        }
-                    }, new Realm.Transaction.OnError() {
-                        @Override
-                        public void onError(Throwable error) {
-                            progressDialog.dismiss();
-                            Toast.makeText(Insert_class_Activity.this, "Error!", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                }else{
-                    Toast.makeText(Insert_class_Activity.this, "Fill all details", Toast.LENGTH_SHORT).show();
-                }
-
-                //-------
-
-            }
-        });
-
-
     }
 
-    public boolean isValid(){
-
-        return !_className.getText().toString().isEmpty() && !_subjectName.getText().toString().isEmpty();
+    private void createClass(String className, String subjectName) {
+        executorService.execute(() -> {
+            ClassNames classNames = new ClassNames(
+                UUID.randomUUID().toString(),
+                className,
+                subjectName
+            );
+            db.classNamesDao().insert(classNames);
+            runOnUiThread(() -> {
+                Toast.makeText(this, "Class created successfully", Toast.LENGTH_SHORT).show();
+                finish();
+            });
+        });
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if(item.getItemId()==android.R.id.home)
-        {
+        if (item.getItemId() == android.R.id.home) {
             finish();
+            return true;
         }
-
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        executorService.shutdown();
     }
 }

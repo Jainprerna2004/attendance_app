@@ -28,25 +28,23 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.ssgb.easyattendance.Adapter.StudentsListAdapter;
-import com.ssgb.easyattendance.realm.Attendance_Reports;
-import com.ssgb.easyattendance.realm.Attendance_Students_List;
-import com.ssgb.easyattendance.realm.Students_List;
+import com.ssgb.easyattendance.database.AppDatabase;
+import com.ssgb.easyattendance.database.entities.AttendanceReports;
+import com.ssgb.easyattendance.database.entities.AttendanceStudentsList;
+import com.ssgb.easyattendance.database.entities.Students;
 import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.afollestad.materialdialogs.MaterialDialog;
-import com.afollestad.materialdialogs.customview.customView;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.TimeZone;
-
-import androidx.room.Room;
-import com.ssgb.easyattendance.realm.AppDatabase;
-import com.ssgb.easyattendance.realm.StudentsListDao;
-import com.ssgb.easyattendance.realm.AttendanceReportsDao;
-import com.ssgb.easyattendance.realm.AttendanceStudentsListDao;
+import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ClassDetail_Activity extends AppCompatActivity {
 
@@ -58,21 +56,15 @@ public class ClassDetail_Activity extends AppCompatActivity {
     private LinearLayout layout_attendance_taken;
     private RecyclerView mRecyclerview;
 
-
     String room_ID, subject_Name, class_Name;
 
     public static final String TAG = "ClassDetail_Activity";
 
     AppDatabase db;
-    StudentsListDao studentsListDao;
-    AttendanceReportsDao attendanceReportsDao;
-    AttendanceStudentsListDao attendanceStudentsListDao;
-
-    private Handler handler = new Handler();
+    ExecutorService executorService;
     StudentsListAdapter mAdapter;
 
     ProgressBar progressBar;
-
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
@@ -81,16 +73,13 @@ public class ClassDetail_Activity extends AppCompatActivity {
         setContentView(R.layout.activity_class_detail_);
 
         getWindow().setExitTransition(null);
-        db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "easy-attendance-db").allowMainThreadQueries().build();
-        studentsListDao = db.studentsListDao();
-        attendanceReportsDao = db.attendanceReportsDao();
-        attendanceStudentsListDao = db.attendanceStudentsListDao();
+        db = AppDatabase.getInstance(this);
+        executorService = Executors.newSingleThreadExecutor();
 
         final String theme = getIntent().getStringExtra("theme");
         class_Name = getIntent().getStringExtra("className");
         subject_Name = getIntent().getStringExtra("subjectName");
         room_ID = getIntent().getStringExtra("classroom_ID");
-
 
         Toolbar toolbar = findViewById(R.id.toolbar_class_detail);
         setSupportActionBar(toolbar);
@@ -120,27 +109,20 @@ public class ClassDetail_Activity extends AppCompatActivity {
                 break;
             case "1":
                 themeImage.setImageResource(R.drawable.asset_bg_green);
-
                 break;
             case "2":
                 themeImage.setImageResource(R.drawable.asset_bg_yellow);
-
                 break;
             case "3":
                 themeImage.setImageResource(R.drawable.asset_bg_palegreen);
-
                 break;
             case "4":
                 themeImage.setImageResource(R.drawable.asset_bg_paleorange);
-
                 break;
             case "5":
                 themeImage.setImageResource(R.drawable.asset_bg_white);
                 break;
-
         }
-
-        //---------------------------------
 
         Runnable r = new Runnable() {
             @Override
@@ -151,13 +133,10 @@ public class ClassDetail_Activity extends AppCompatActivity {
         };
         handler.postDelayed(r, 500);
 
-        //----------------------------------------
-
         submit_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-                int count = studentsListDao.countByClassId(room_ID);
+                int count = db.studentsDao().countByClassId(room_ID);
                 final String size, size2;
                 final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(ClassDetail_Activity.this);
                 size = String.valueOf(preferences.getAll().size());
@@ -168,7 +147,6 @@ public class ClassDetail_Activity extends AppCompatActivity {
                 }else {
                     Toast.makeText(ClassDetail_Activity.this, "Select all........", Toast.LENGTH_SHORT).show();
                 }
-
             }
         });
 
@@ -183,65 +161,23 @@ public class ClassDetail_Activity extends AppCompatActivity {
             }
         });
 
-
-
         addStudent.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-
-
-                    LayoutInflater inflater = LayoutInflater.from(ClassDetail_Activity.this);
-                    final View view1 = inflater.inflate(R.layout.popup_add_student, null);
-                    student_name = view1.findViewById(R.id.name_student_popup);
-                    reg_no = view1.findViewById(R.id.regNo_student_popup);
-                    mobile_no = view1.findViewById(R.id.mobileNo_student_popup);
-
-                    MaterialDialog dialog = new MaterialDialog(ClassDetail_Activity.this)
-                            .title(null, "Add Student")
-                            .icon(R.drawable.ic_baseline_person_add_24)
-                            .customView(view1, noVerticalPadding = true)
-                            .cancelable(false);
-
-                    dialog.show();
-
-                    view1.findViewById(R.id.add_btn_popup).setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            String name = student_name.getText().toString();
-                            String regNo = reg_no.getText().toString();
-                            String mobNo = mobile_no.getText().toString();
-                            if (isValid()) {
-                                addStudentMethod(name, regNo, mobNo);
-                                dialog.dismiss();
-                            } else {
-                                Toast.makeText(ClassDetail_Activity.this, "Please fill all the details..", Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                    });
-
-                    view1.findViewById(R.id.cancel_btn_popup).setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            dialog.dismiss();
-                        }
-                    });
-
+                showAddStudentDialog();
             }
         });
-
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-
     }
 
     public void RoomInit(){
         final String date = new SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault()).format(new Date());
-        int count = studentsListDao.countByClassId(room_ID);
-        Attendance_Reports report = attendanceReportsDao.getByDateAndClassId(date+room_ID);
+        int count = db.studentsDao().countByClassId(room_ID);
+        AttendanceReports report = db.attendanceReportsDao().getByDateAndClassId(date, room_ID);
         if (report != null) {
             layout_attendance_taken.setVisibility(View.VISIBLE);
             submit_btn.setVisibility(View.GONE);
@@ -259,7 +195,7 @@ public class ClassDetail_Activity extends AppCompatActivity {
         total_students.setText("Total Students : " + count);
         mRecyclerview.setLayoutManager(new LinearLayoutManager(this));
         String extraClick = "";
-        java.util.List<Students_List> students = studentsListDao.getStudentsByClassId(room_ID);
+        java.util.List<Students> students = db.studentsDao().getStudentsByClassId(room_ID);
         mAdapter = new StudentsListAdapter(students, ClassDetail_Activity.this, date+room_ID, extraClick);
         mRecyclerview.setAdapter(mAdapter);
     }
@@ -269,14 +205,14 @@ public class ClassDetail_Activity extends AppCompatActivity {
         progressDialog.setMessage("Please wait..");
         progressDialog.show();
         final String date = new SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault()).format(new Date());
-        java.util.List<Attendance_Students_List> list_students = attendanceStudentsListDao.getByDateAndClassId(date+room_ID);
+        java.util.List<AttendanceStudentsList> list_students = db.attendanceStudentsListDao().getByDateAndClassId(date+room_ID);
         Calendar calendar = Calendar.getInstance(TimeZone.getDefault());
         final String dateOnly = String.valueOf(calendar.get(Calendar.DATE));
         @SuppressLint("SimpleDateFormat")
         final String monthOnly = new SimpleDateFormat("MMM").format(calendar.getTime());
         try {
-            Attendance_Reports attendance_reports = new Attendance_Reports();
-            attendance_reports.setClassId(room_ID);
+            AttendanceReports attendance_reports = new AttendanceReports();
+            attendance_reports.setClass_id(room_ID);
             attendance_reports.setAttendance_students_lists(list_students);
             attendance_reports.setDate(date);
             attendance_reports.setDateOnly(dateOnly);
@@ -284,7 +220,7 @@ public class ClassDetail_Activity extends AppCompatActivity {
             attendance_reports.setDate_and_classID(date+room_ID);
             attendance_reports.setClassname(class_Name);
             attendance_reports.setSubjName(subject_Name);
-            attendanceReportsDao.insert(attendance_reports);
+            db.attendanceReportsDao().insert(attendance_reports);
             SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
             SharedPreferences.Editor editor = preferences.edit();
             editor.clear();
@@ -298,9 +234,9 @@ public class ClassDetail_Activity extends AppCompatActivity {
         }
     }
 
-
     @Override
     public void onBackPressed() {
+        super.onBackPressed();
         finish();
     }
 
@@ -311,21 +247,22 @@ public class ClassDetail_Activity extends AppCompatActivity {
         editor.clear();
         editor.commit();
         super.onDestroy();
+        executorService.shutdown();
     }
 
-    public void addStudentMethod(final String studentName, final String regNo, final String mobileNo) {
+    public void addStudent(final String studentName, final String regNo, final String mobileNo) {
         final ProgressDialog progressDialog = new ProgressDialog(ClassDetail_Activity.this);
         progressDialog.setMessage("Creating class..");
         progressDialog.show();
         try {
-            Students_List students_list = new Students_List();
+            Students student = new Students();
             String id = studentName+regNo;
-            students_list.setId(id);
-            students_list.setName_student(studentName);
-            students_list.setRegNo_student(regNo);
-            students_list.setMobileNo_student(mobileNo);
-            students_list.setClass_id(room_ID);
-            studentsListDao.insert(students_list);
+            student.setStudent_id(id);
+            student.setStudent_name(studentName);
+            student.setStudent_roll_no(regNo);
+            student.setStudent_phone(mobileNo);
+            student.setClass_id(room_ID);
+            db.studentsDao().insert(student);
             progressDialog.dismiss();
             Toast.makeText(ClassDetail_Activity.this, "Student Added", Toast.LENGTH_SHORT).show();
             RoomInit(); // Refresh list
@@ -335,14 +272,31 @@ public class ClassDetail_Activity extends AppCompatActivity {
         }
     }
 
-    public boolean isValid(){
+    private void showAddStudentDialog() {
+        View view = getLayoutInflater().inflate(R.layout.dialog_add_student, null);
+        EditText nameInput = view.findViewById(R.id.name_input);
+        EditText rollNoInput = view.findViewById(R.id.roll_no_input);
+        EditText phoneInput = view.findViewById(R.id.phone_input);
 
-        if (student_name.getText().toString().isEmpty() || reg_no.getText().toString().isEmpty() || mobile_no.getText().toString().isEmpty()){
-            return false;
-        }
-        return true;
+        new MaterialDialog.Builder(this)
+            .title("Add Student")
+            .customView(view, false)
+            .positiveText("Add")
+            .negativeText("Cancel")
+            .onPositive((dialog, which) -> {
+                String name = nameInput.getText().toString();
+                String rollNo = rollNoInput.getText().toString();
+                String phone = phoneInput.getText().toString();
+
+                if (name.isEmpty() || rollNo.isEmpty() || phone.isEmpty()) {
+                    Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                addStudent(name, rollNo, phone);
+            })
+            .show();
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -359,6 +313,4 @@ public class ClassDetail_Activity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
-
-
 }

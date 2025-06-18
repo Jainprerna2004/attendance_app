@@ -1,81 +1,87 @@
 package com.ssgb.easyattendance;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.os.Bundle;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.lifecycle.LiveData;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.ssgb.easyattendance.Adapter.Reports_Detail_Adapter;
-import com.ssgb.easyattendance.realm.Attendance_Students_List;
+import com.ssgb.easyattendance.database.AppDatabase;
+import com.ssgb.easyattendance.database.entities.AttendanceStudentsList;
 
 import java.util.List;
-import java.util.Objects;
-
-import androidx.room.Room;
-import com.ssgb.easyattendance.realm.AppDatabase;
-import com.ssgb.easyattendance.realm.AttendanceStudentsListDao;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Reports_Detail_Activity extends AppCompatActivity {
-
-    RecyclerView recyclerView;
-    Reports_Detail_Adapter mAdapter;
-
-    TextView subj, className, toolbar_title;
-
-    AppDatabase db;
-    AttendanceStudentsListDao attendanceStudentsListDao;
+    private TextView className, date;
+    private RecyclerView recyclerView;
+    private Reports_Detail_Adapter adapter;
+    private AppDatabase db;
+    private ExecutorService executorService;
+    private String room_ID;
+    private String classname;
+    private String dateStr;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_reports__detail);
-        db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "easy-attendance-db").allowMainThreadQueries().build();
-        attendanceStudentsListDao = db.attendanceStudentsListDao();
+        setContentView(R.layout.activity_reports_detail);
 
-        String room_ID = getIntent().getStringExtra("ID");
-        String classname = getIntent().getStringExtra("class");
-        String subjName = getIntent().getStringExtra("subject");
-        String date = getIntent().getStringExtra("date");
-
-        Toolbar toolbar = findViewById(R.id.toolbar_reports_detail);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        recyclerView = findViewById(R.id.recyclerView_reports_detail);
-        subj = findViewById(R.id.subjName_report_detail);
-        className = findViewById(R.id.classname_report_detail);
-        toolbar_title = findViewById(R.id.toolbar_title);
-        toolbar_title.setText(date);
-        subj.setText(subjName);
+        room_ID = getIntent().getStringExtra("room_ID");
+        classname = getIntent().getStringExtra("classname");
+        dateStr = getIntent().getStringExtra("date");
+
+        className = findViewById(R.id.class_name);
+        date = findViewById(R.id.date);
+        recyclerView = findViewById(R.id.recyclerView);
+
         className.setText(classname);
+        date.setText(dateStr);
 
-        List<Attendance_Students_List> list = attendanceStudentsListDao.getByDateAndClassId(room_ID);
+        db = AppDatabase.getInstance(this);
+        executorService = Executors.newSingleThreadExecutor();
 
-        recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        adapter = new Reports_Detail_Adapter(this, null);
+        recyclerView.setAdapter(adapter);
 
-        mAdapter = new Reports_Detail_Adapter(list, Reports_Detail_Activity.this, room_ID);
-        recyclerView.setAdapter(mAdapter);
+        loadAttendanceDetails();
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.only_dot, menu);
-        return true;
+    private void loadAttendanceDetails() {
+        executorService.execute(() -> {
+            LiveData<List<AttendanceStudentsList>> attendanceLiveData = 
+                db.attendanceStudentsListDao().getAttendanceByDateAndClassId(dateStr + "_" + room_ID);
+            attendanceLiveData.observe(this, attendanceList -> {
+                if (attendanceList != null) {
+                    adapter.updateList(attendanceList);
+                }
+            });
+        });
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if(item.getItemId()==android.R.id.home)
-        {
+        if (item.getItemId() == android.R.id.home) {
             finish();
+            return true;
         }
-
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        executorService.shutdown();
     }
 }

@@ -28,4 +28,6 @@
     <color name="text_tertiary">#9E9E9E</color>
     <color name="text_hint">#BDBDBD</color>
 
+    <color name="light_green_A700">#64DD17</color>
+
 </resources>

@@ -1,50 +1,71 @@
 package com.ssgb.easyattendance.Adapter;
 
-import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.ssgb.easyattendance.R;
-import com.ssgb.easyattendance.realm.Attendance_Reports;
-import com.ssgb.easyattendance.viewholders.ViewHolder_reports;
+import com.ssgb.easyattendance.Reports_Detail_Activity;
+import com.ssgb.easyattendance.database.entities.AttendanceReports;
 
-import io.realm.Realm;
-import io.realm.RealmRecyclerViewAdapter;
-import io.realm.RealmResults;
+import java.util.List;
 
-public class ReportsAdapter extends RealmRecyclerViewAdapter<Attendance_Reports, ViewHolder_reports> {
+public class ReportsAdapter extends RecyclerView.Adapter<ReportsAdapter.ViewHolder> {
+    private List<AttendanceReports> mList;
+    private Context context;
 
-    private final Activity mActivity;
-    RealmResults<Attendance_Reports> mList;
-    String stuID, mroomID;
-    Realm realm = Realm.getDefaultInstance();
+    public ReportsAdapter(Context context, List<AttendanceReports> mList) {
+        this.context = context;
+        this.mList = mList;
+    }
 
-    public ReportsAdapter(RealmResults<Attendance_Reports> list, Activity context, String roomID) {
-
-        super(context, list, true);
-
-        mActivity = context;
-        mList = list;
-        mroomID =roomID;
+    public void updateList(List<AttendanceReports> newList) {
+        this.mList = newList;
+        notifyDataSetChanged();
     }
 
     @NonNull
     @Override
-    public ViewHolder_reports onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.reports_adapter_item, parent, false);
-        return new ViewHolder_reports(itemView, mActivity, mList);
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.reports_item, parent, false);
+        return new ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder_reports holder, int position) {
-        Attendance_Reports temp = getItem(position);
-        holder.month.setText(temp.getMonthOnly());
-        holder.date.setText(temp.getDateOnly());
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        AttendanceReports report = mList.get(position);
+        holder.date.setText(report.getDate());
+        holder.className.setText(report.getClassname());
+        holder.subjectName.setText(report.getSubjName());
 
+        holder.itemView.setOnClickListener(v -> {
+            Intent intent = new Intent(context, Reports_Detail_Activity.class);
+            intent.putExtra("date", report.getDate());
+            intent.putExtra("classname", report.getClassname());
+            intent.putExtra("room_ID", report.getClass_id());
+            context.startActivity(intent);
+        });
     }
 
+    @Override
+    public int getItemCount() {
+        return mList != null ? mList.size() : 0;
+    }
 
+    public static class ViewHolder extends RecyclerView.ViewHolder {
+        TextView date, className, subjectName;
+
+        public ViewHolder(@NonNull View itemView) {
+            super(itemView);
+            date = itemView.findViewById(R.id.date);
+            className = itemView.findViewById(R.id.className);
+            subjectName = itemView.findViewById(R.id.subjectName);
+        }
+    }
 }
