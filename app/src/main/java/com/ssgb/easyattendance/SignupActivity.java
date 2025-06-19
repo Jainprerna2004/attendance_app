@@ -6,6 +6,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -15,7 +16,9 @@ import com.google.firebase.auth.UserProfileChangeRequest;
 
 public class SignupActivity extends AppCompatActivity {
     private EditText nameInput, emailInput, passwordInput;
-    private Button signupButton, loginButton;
+    private Button signupButton;
+
+    private TextView loginText;
     private ProgressBar progressBar;
     private FirebaseAuth auth;
 
@@ -26,12 +29,12 @@ public class SignupActivity extends AppCompatActivity {
 
         auth = FirebaseAuth.getInstance();
 
-        nameInput = findViewById(R.id.name_input);
-        emailInput = findViewById(R.id.email_input);
-        passwordInput = findViewById(R.id.password_input);
-        signupButton = findViewById(R.id.signup_button);
-        loginButton = findViewById(R.id.login_button);
-        progressBar = findViewById(R.id.progress_bar);
+        nameInput = findViewById(R.id.etName);
+        emailInput = findViewById(R.id.etEmail);
+        passwordInput = findViewById(R.id.etPassword);
+        signupButton = findViewById(R.id.btnSignUp);
+        loginText = findViewById(R.id.tvLoginLink);
+        progressBar = findViewById(R.id.progressBar);
 
         signupButton.setOnClickListener(v -> {
             String name = nameInput.getText().toString();
@@ -46,7 +49,7 @@ public class SignupActivity extends AppCompatActivity {
             signupUser(name, email, password);
         });
 
-        loginButton.setOnClickListener(v -> {
+        loginText.setOnClickListener(v -> {
             Intent intent = new Intent(SignupActivity.this, LoginActivity.class);
             startActivity(intent);
             finish();

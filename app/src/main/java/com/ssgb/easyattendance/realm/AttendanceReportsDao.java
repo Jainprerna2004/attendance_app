@@ -21,6 +21,9 @@ public interface AttendanceReportsDao {
     @Query("SELECT * FROM attendance_reports WHERE class_id = :classId")
     List<Attendance_Reports> getByClassId(String classId);
 
+    @Query("DELETE FROM attendance_reports WHERE class_id = :classId")
+    void deleteByClassId(String classId);
+
     @Query("SELECT * FROM attendance_reports WHERE class_id = :classId AND date = :date")
     Attendance_Reports getByDateAndClassId(String date, String classId);
 

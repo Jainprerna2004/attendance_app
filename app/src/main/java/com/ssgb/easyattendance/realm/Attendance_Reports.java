@@ -1,33 +1,56 @@
-package com.ssgb.easyattendance.database.entities;
+package com.ssgb.easyattendance.realm;
 
-import androidx.annotation.NonNull;
 import androidx.room.Entity;
-import androidx.room.ForeignKey;
-import androidx.room.Index;
 import androidx.room.PrimaryKey;
+import androidx.room.ColumnInfo;
+import androidx.room.Ignore;
+import androidx.annotation.NonNull;
+import java.util.List;
 
-@Entity(tableName = "attendance_reports",
-        foreignKeys = @ForeignKey(entity = ClassNames.class,
-                                parentColumns = "class_id",
-                                childColumns = "class_id",
-                                onDelete = ForeignKey.CASCADE),
-        indices = {@Index("class_id")})
-public class AttendanceReports {
+@Entity(tableName = "attendance_reports")
+public class Attendance_Reports {
+
     @PrimaryKey
+    @ColumnInfo(name = "report_id")
     @NonNull
     private String report_id;
+
+    @ColumnInfo(name = "date")
     private String date;
+
+    @ColumnInfo(name = "class_id")
     private String class_id;
+
+    @ColumnInfo(name = "classname")
     private String classname;
+
+    @ColumnInfo(name = "subjName")
     private String subjName;
+
+    @ColumnInfo(name = "date_and_classID")
     private String date_and_classID;
+
+    @ColumnInfo(name = "dateOnly")
     private String dateOnly;
+
+    @ColumnInfo(name = "monthOnly")
     private String monthOnly;
+
+    @ColumnInfo(name = "total_students")
     private int total_students;
+
+    @ColumnInfo(name = "present_count")
     private int present_count;
+
+    @ColumnInfo(name = "absent_count")
     private int absent_count;
 
-    public AttendanceReports(String report_id, String date, String class_id, String classname, 
+    // Default constructor
+    public Attendance_Reports() {}
+
+    // Constructor with parameters - ignored by Room
+    @Ignore
+    public Attendance_Reports(String report_id, String date, String class_id, String classname, 
                            String subjName, String date_and_classID, String dateOnly, String monthOnly) {
         this.report_id = report_id;
         this.date = date;
@@ -39,6 +62,7 @@ public class AttendanceReports {
         this.monthOnly = monthOnly;
     }
 
+    // Getters and Setters
     @NonNull
     public String getReport_id() {
         return report_id;

@@ -17,14 +17,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.ssgb.easyattendance.BottomSheet.Student_Edit_Sheet;
 import com.ssgb.easyattendance.R;
 import com.ssgb.easyattendance.realm.AppDatabase;
-import com.ssgb.easyattendance.realm.Attendance_Students_List;
 import com.ssgb.easyattendance.realm.AttendanceStudentsListDao;
 import com.ssgb.easyattendance.realm.Students_List;
+import com.ssgb.easyattendance.realm.Attendance_Students_List;
 
-import androidx.room.Room;
 import java.util.List;
-
-import static androidx.core.app.ActivityOptionsCompat.makeSceneTransitionAnimation;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ViewHolder_students extends RecyclerView.ViewHolder{
 
@@ -33,8 +32,6 @@ public class ViewHolder_students extends RecyclerView.ViewHolder{
 
     public final TextView student_name;
     public final TextView student_regNo;
-    public final TextView student_phone;
-    public final TextView student_attendance;
     public LinearLayout layout;
     public String stuName, regNo, mobileNo, mRoomID;
     public RadioGroup radioGroup;
@@ -42,14 +39,13 @@ public class ViewHolder_students extends RecyclerView.ViewHolder{
 
     AppDatabase db;
     AttendanceStudentsListDao attendanceStudentsListDao;
+    ExecutorService executorService;
 
     public ViewHolder_students(@NonNull final View itemView, Activity MainActivity, List<Students_List> list, final String roomID) {
         super(itemView);
 
         student_name = itemView.findViewById(R.id.student_name_adapter);
         student_regNo = itemView.findViewById(R.id.student_regNo_adapter);
-        student_phone = itemView.findViewById(R.id.student_phone_adapter);
-        student_attendance = itemView.findViewById(R.id.student_attendance_adapter);
         radioGroup = itemView.findViewById(R.id.radioGroup);
         radioButton_present = itemView.findViewById(R.id.radio_present);
         radioButton_absent = itemView.findViewById(R.id.radio_absent);
@@ -58,8 +54,10 @@ public class ViewHolder_students extends RecyclerView.ViewHolder{
         mActivity = MainActivity;
         mList = list;
         mRoomID = roomID;
-        db = Room.databaseBuilder(mActivity.getApplicationContext(), AppDatabase.class, "easy-attendance-db").allowMainThreadQueries().build();
+        db = AppDatabase.getInstance(mActivity.getApplicationContext());
         attendanceStudentsListDao = db.attendanceStudentsListDao();
+        executorService = Executors.newSingleThreadExecutor();
+        
         // For demo: always show radioGroup (logic can be improved with Room queries if needed)
         radioGroup.setVisibility(View.VISIBLE);
 
@@ -69,62 +67,103 @@ public class ViewHolder_students extends RecyclerView.ViewHolder{
                 final String attendance = "Present";
                 SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(mActivity);
                 SharedPreferences.Editor editor = preferences.edit();
-                editor.putString(mList.get(getAbsoluteAdapterPosition()).getRegNo_student(), attendance);
+                editor.putString(mList.get(getAdapterPosition()).getRegNo_student(), attendance);
                 editor.apply();
-                Attendance_Students_List attendance_students_list = new Attendance_Students_List();
-                attendance_students_list.setStudent_name((mList.get(getAbsoluteAdapterPosition()).getName_student()));
-                attendance_students_list.setAttendance(attendance);
-                attendance_students_list.setStudent_phone((mList.get(getAbsoluteAdapterPosition()).getMobileNo_student()));
-                attendance_students_list.setStudent_roll_no(mList.get(getAbsoluteAdapterPosition()).getRegNo_student());
-                attendance_students_list.setClass_id(mList.get(getAbsoluteAdapterPosition()).getClass_id());
-                attendance_students_list.setDate_and_classID(mRoomID);
-                attendance_students_list.setUnique_ID(mList.get(getAbsoluteAdapterPosition()).getRegNo_student()+mRoomID);
-                attendanceStudentsListDao.insert(attendance_students_list);
+                
+                final String uniqueId = mList.get(getAdapterPosition()).getRegNo_student() + mRoomID;
+                final Students_List student = mList.get(getAdapterPosition());
+                
+                executorService.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        // Check if record exists
+                        Attendance_Students_List existingRecord = attendanceStudentsListDao.getByUniqueId(uniqueId);
+                        
+                        if (existingRecord != null) {
+                            // Update existing record
+                            existingRecord.setAttendance(attendance);
+                            attendanceStudentsListDao.update(existingRecord);
+                        } else {
+                            // Insert new record
+                            Attendance_Students_List attendance_students_list = new Attendance_Students_List();
+                            attendance_students_list.setStudentName(student.getName_student());
+                            attendance_students_list.setAttendance(attendance);
+                            attendance_students_list.setStudentPhone(student.getMobileNo_student());
+                            attendance_students_list.setStudentRollNo(student.getRegNo_student());
+                            attendance_students_list.setClassId(student.getClass_id());
+                            attendance_students_list.setDateAndClassId(mRoomID);
+                            attendance_students_list.setUniqueId(uniqueId);
+                            attendanceStudentsListDao.insert(attendance_students_list);
+                        }
+                    }
+                });
             }
         });
+        
         radioButton_absent.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 final String attendance = "Absent";
                 SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(mActivity);
                 SharedPreferences.Editor editor = preferences.edit();
-                editor.putString(mList.get(getAbsoluteAdapterPosition()).getRegNo_student(), attendance);
+                editor.putString(mList.get(getAdapterPosition()).getRegNo_student(), attendance);
                 editor.apply();
-                Attendance_Students_List attendance_students_list = new Attendance_Students_List();
-                attendance_students_list.setStudent_name((mList.get(getAbsoluteAdapterPosition()).getName_student()));
-                attendance_students_list.setAttendance(attendance);
-                attendance_students_list.setStudent_phone((mList.get(getAbsoluteAdapterPosition()).getMobileNo_student()));
-                attendance_students_list.setStudent_roll_no(mList.get(getAbsoluteAdapterPosition()).getRegNo_student());
-                attendance_students_list.setClass_id(mList.get(getAbsoluteAdapterPosition()).getClass_id());
-                attendance_students_list.setDate_and_classID(mRoomID);
-                attendance_students_list.setUnique_ID(mList.get(getAbsoluteAdapterPosition()).getRegNo_student()+mRoomID);
-                attendanceStudentsListDao.insert(attendance_students_list);
+                
+                final String uniqueId = mList.get(getAdapterPosition()).getRegNo_student() + mRoomID;
+                final Students_List student = mList.get(getAdapterPosition());
+                
+                executorService.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        // Check if record exists
+                        Attendance_Students_List existingRecord = attendanceStudentsListDao.getByUniqueId(uniqueId);
+                        
+                        if (existingRecord != null) {
+                            // Update existing record
+                            existingRecord.setAttendance(attendance);
+                            attendanceStudentsListDao.update(existingRecord);
+                        } else {
+                            // Insert new record
+                            Attendance_Students_List attendance_students_list = new Attendance_Students_List();
+                            attendance_students_list.setStudentName(student.getName_student());
+                            attendance_students_list.setAttendance(attendance);
+                            attendance_students_list.setStudentPhone(student.getMobileNo_student());
+                            attendance_students_list.setStudentRollNo(student.getRegNo_student());
+                            attendance_students_list.setClassId(student.getClass_id());
+                            attendance_students_list.setDateAndClassId(mRoomID);
+                            attendance_students_list.setUniqueId(uniqueId);
+                            attendanceStudentsListDao.insert(attendance_students_list);
+                        }
+                    }
+                });
             }
         });
 
         layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                stuName = mList.get(getAbsoluteAdapterPosition()).getName_student();
-                regNo = mList.get(getAbsoluteAdapterPosition()).getRegNo_student();
-                mobileNo = mList.get(getAbsoluteAdapterPosition()).getMobileNo_student();
+                stuName = mList.get(getAdapterPosition()).getName_student();
+                regNo = mList.get(getAdapterPosition()).getRegNo_student();
+                mobileNo = mList.get(getAdapterPosition()).getMobileNo_student();
                 Student_Edit_Sheet student_edit_sheet = new Student_Edit_Sheet(stuName, regNo, mobileNo);
                 student_edit_sheet.setStyle(DialogFragment.STYLE_NORMAL, R.style.BottomSheetTheme);
                 student_edit_sheet.show(((FragmentActivity)view.getContext()).getSupportFragmentManager(), "BottomSheet");
             }
         });
-
     }
 
     public void bind(Attendance_Students_List student) {
-        student_name.setText(student.getStudent_name());
-        student_regNo.setText(student.getStudent_roll_no());
-        student_phone.setText(student.getStudent_phone());
-        student_attendance.setText(student.getAttendance());
+        student_name.setText(student.getStudentName());
+        student_regNo.setText(student.getStudentRollNo());
     }
 
     public void updateAttendance(String status) {
-        student_attendance.setText(status);
+        // This method is no longer used in the new layout
     }
 
+    public void cleanup() {
+        if (executorService != null && !executorService.isShutdown()) {
+            executorService.shutdown();
+        }
+    }
 }

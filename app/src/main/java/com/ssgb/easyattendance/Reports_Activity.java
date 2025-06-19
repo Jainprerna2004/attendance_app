@@ -2,24 +2,21 @@ package com.ssgb.easyattendance;
 
 import android.os.Bundle;
 import android.view.MenuItem;
-import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.lifecycle.LiveData;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.ssgb.easyattendance.Adapter.ReportsAdapter;
-import com.ssgb.easyattendance.database.AppDatabase;
-import com.ssgb.easyattendance.database.entities.AttendanceReports;
+import com.ssgb.easyattendance.realm.AppDatabase;
+import com.ssgb.easyattendance.realm.Attendance_Reports;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Reports_Activity extends AppCompatActivity {
-    private TextView className, subjectName;
     private RecyclerView recyclerView;
     private ReportsAdapter adapter;
     private AppDatabase db;
@@ -33,20 +30,15 @@ public class Reports_Activity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_reports);
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar_reports);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         room_ID = getIntent().getStringExtra("room_ID");
-        classname = getIntent().getStringExtra("classname");
-        subjName = getIntent().getStringExtra("subjName");
+        classname = getIntent().getStringExtra("class_name");
+        subjName = getIntent().getStringExtra("subject_name");
 
-        className = findViewById(R.id.class_name);
-        subjectName = findViewById(R.id.subject_name);
-        recyclerView = findViewById(R.id.recyclerView);
-
-        className.setText(classname);
-        subjectName.setText(subjName);
+        recyclerView = findViewById(R.id.recyclerView_reports);
 
         db = AppDatabase.getInstance(this);
         executorService = Executors.newSingleThreadExecutor();
@@ -60,8 +52,8 @@ public class Reports_Activity extends AppCompatActivity {
 
     private void loadReports() {
         executorService.execute(() -> {
-            LiveData<List<AttendanceReports>> reportsLiveData = db.attendanceReportsDao().getReportsByClassId(room_ID);
-            reportsLiveData.observe(this, reports -> {
+            List<Attendance_Reports> reports = db.attendanceReportsDao().getByClassId(room_ID);
+            runOnUiThread(() -> {
                 if (reports != null) {
                     adapter.updateList(reports);
                 }

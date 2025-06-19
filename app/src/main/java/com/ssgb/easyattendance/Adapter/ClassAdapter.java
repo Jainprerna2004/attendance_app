@@ -12,15 +12,15 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.ssgb.easyattendance.ClassDetail_Activity;
 import com.ssgb.easyattendance.R;
-import com.ssgb.easyattendance.database.entities.ClassNames;
+import com.ssgb.easyattendance.realm.Class_Names;
 
 import java.util.List;
 
 public class ClassAdapter extends RecyclerView.Adapter<ClassAdapter.ViewHolder> {
-    private List<ClassNames> classList;
+    private List<Class_Names> classList;
     private Context context;
 
-    public ClassAdapter(Context context, List<ClassNames> classList) {
+    public ClassAdapter(Context context, List<Class_Names> classList) {
         this.context = context;
         this.classList = classList;
     }
@@ -35,21 +35,16 @@ public class ClassAdapter extends RecyclerView.Adapter<ClassAdapter.ViewHolder> 
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        ClassNames classItem = classList.get(position);
-        holder.className.setText(classItem.getClass_name());
-        holder.subjectName.setText(classItem.getSubject_name());
-        holder.teacherName.setText(classItem.getTeacher_name());
-        holder.roomNo.setText(classItem.getRoom_no());
-        holder.time.setText(classItem.getTime());
+        Class_Names classItem = classList.get(position);
+        holder.className.setText(classItem.getName_class());
+        holder.subjectName.setText(classItem.getName_subject());
+        holder.totalStudents.setText("students: 0"); // You can update this with actual count later
 
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, ClassDetail_Activity.class);
-            intent.putExtra("class_id", classItem.getClass_id());
-            intent.putExtra("class_name", classItem.getClass_name());
-            intent.putExtra("subject_name", classItem.getSubject_name());
-            intent.putExtra("teacher_name", classItem.getTeacher_name());
-            intent.putExtra("room_no", classItem.getRoom_no());
-            intent.putExtra("time", classItem.getTime());
+            intent.putExtra("class_id", classItem.getId());
+            intent.putExtra("class_name", classItem.getName_class());
+            intent.putExtra("subject_name", classItem.getName_subject());
             context.startActivity(intent);
         });
     }
@@ -59,21 +54,19 @@ public class ClassAdapter extends RecyclerView.Adapter<ClassAdapter.ViewHolder> 
         return classList != null ? classList.size() : 0;
     }
 
-    public void updateList(List<ClassNames> newList) {
+    public void updateList(List<Class_Names> newList) {
         this.classList = newList;
         notifyDataSetChanged();
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView className, subjectName, teacherName, roomNo, time;
+        TextView className, subjectName, totalStudents;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            className = itemView.findViewById(R.id.class_name);
-            subjectName = itemView.findViewById(R.id.subject_name);
-            teacherName = itemView.findViewById(R.id.teacher_name);
-            roomNo = itemView.findViewById(R.id.room_no);
-            time = itemView.findViewById(R.id.time);
+            className = itemView.findViewById(R.id.className_adapter);
+            subjectName = itemView.findViewById(R.id.subjectName_adapter);
+            totalStudents = itemView.findViewById(R.id.totalStudents_adapter);
         }
     }
 } 

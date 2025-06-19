@@ -2,7 +2,8 @@ package com.ssgb.easyattendance;
 
 import android.app.Application;
 
-import com.ssgb.easyattendance.database.AppDatabase;
+import com.google.firebase.FirebaseApp;
+import com.ssgb.easyattendance.realm.AppDatabase;
 
 public class MyApplication extends Application {
     private static AppDatabase database;
@@ -10,6 +11,11 @@ public class MyApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        
+        // Initialize Firebase
+        FirebaseApp.initializeApp(this);
+        
+        // Initialize database
         database = AppDatabase.getInstance(this);
     }
 

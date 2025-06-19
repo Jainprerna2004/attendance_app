@@ -39,10 +39,10 @@ public class ViewHolder_reports extends RecyclerView.ViewHolder {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(view.getContext(), Reports_Detail_Activity.class);
-                intent.putExtra("ID", mList.get(getAbsoluteAdapterPosition()).getDate_and_classID());
-                intent.putExtra("date", mList.get(getAbsoluteAdapterPosition()).getDate());
-                intent.putExtra("subject", mList.get(getAbsoluteAdapterPosition()).getSubjName());
-                intent.putExtra("class", mList.get(getAbsoluteAdapterPosition()).getClassname());
+                intent.putExtra("ID", mList.get(getAdapterPosition()).getDate_and_classID());
+                intent.putExtra("date", mList.get(getAdapterPosition()).getDate());
+                intent.putExtra("subject", mList.get(getAdapterPosition()).getSubjName());
+                intent.putExtra("class", mList.get(getAdapterPosition()).getClassname());
                 view.getContext().startActivity(intent);
             }
         });

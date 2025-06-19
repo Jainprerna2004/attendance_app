@@ -43,10 +43,21 @@
         android:id="@+id/toolbar_beginner"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:menu="@menu/only_dot"
         android:background="@color/white"
-        app:title="Easy Attendance"
-        />
+        app:title="Easy Attendance">
+
+        <ImageButton
+            android:id="@+id/buttonLogout"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="end"
+            android:src="@drawable/ic_logout"
+            android:layout_marginEnd="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Logout"
+            android:padding="12dp"/>
+
+    </androidx.appcompat.widget.Toolbar>
 
     <com.google.android.material.bottomappbar.BottomAppBar
         android:id="@+id/bottomAppBar"
@@ -67,22 +78,5 @@
         app:borderWidth="0dp"
         app:tint="@null"
         />
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="top">
-
-        <Button
-            android:id="@+id/buttonLogout"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Logout"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="16dp"/>
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

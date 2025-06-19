@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Filter;
+import android.widget.Filterable;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -12,16 +14,19 @@ import com.ssgb.easyattendance.R;
 import com.ssgb.easyattendance.realm.Class_Names;
 import com.ssgb.easyattendance.viewholders.ViewHolder;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class ClassListAdapter extends RecyclerView.Adapter<ViewHolder> {
+public class ClassListAdapter extends RecyclerView.Adapter<ViewHolder> implements Filterable {
 
     private final Activity mActivity;
     List<Class_Names> mList;
+    List<Class_Names> mListFull; // Full list for filtering
 
     public ClassListAdapter(List<Class_Names> list, Activity context) {
         mActivity = context;
         mList = list;
+        mListFull = new ArrayList<>(list); // Copy the full list
     }
 
     @NonNull
@@ -74,5 +79,47 @@ public class ClassListAdapter extends RecyclerView.Adapter<ViewHolder> {
     @Override
     public int getItemCount() {
         return mList != null ? mList.size() : 0;
+    }
+
+    @Override
+    public Filter getFilter() {
+        return classFilter;
+    }
+
+    private Filter classFilter = new Filter() {
+        @Override
+        protected FilterResults performFiltering(CharSequence constraint) {
+            List<Class_Names> filteredList = new ArrayList<>();
+
+            if (constraint == null || constraint.length() == 0) {
+                filteredList.addAll(mListFull);
+            } else {
+                String filterPattern = constraint.toString().toLowerCase().trim();
+                for (Class_Names item : mListFull) {
+                    if (item.getName_class().toLowerCase().contains(filterPattern) ||
+                        item.getName_subject().toLowerCase().contains(filterPattern)) {
+                        filteredList.add(item);
+                    }
+                }
+            }
+
+            FilterResults results = new FilterResults();
+            results.values = filteredList;
+            results.count = filteredList.size();
+            return results;
+        }
+
+        @Override
+        protected void publishResults(CharSequence constraint, FilterResults results) {
+            mList.clear();
+            mList.addAll((List<Class_Names>) results.values);
+            notifyDataSetChanged();
+        }
+    };
+
+    public void updateList(List<Class_Names> newList) {
+        mList = newList;
+        mListFull = new ArrayList<>(newList);
+        notifyDataSetChanged();
     }
 }

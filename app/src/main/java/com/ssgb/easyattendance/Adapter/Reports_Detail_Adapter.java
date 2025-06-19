@@ -10,20 +10,20 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.ssgb.easyattendance.R;
-import com.ssgb.easyattendance.database.entities.AttendanceStudentsList;
+import com.ssgb.easyattendance.realm.Attendance_Students_List;
 
 import java.util.List;
 
 public class Reports_Detail_Adapter extends RecyclerView.Adapter<Reports_Detail_Adapter.ViewHolder> {
-    private List<AttendanceStudentsList> mList;
+    private List<Attendance_Students_List> mList;
     private Context context;
 
-    public Reports_Detail_Adapter(Context context, List<AttendanceStudentsList> mList) {
+    public Reports_Detail_Adapter(Context context, List<Attendance_Students_List> mList) {
         this.context = context;
         this.mList = mList;
     }
 
-    public void updateList(List<AttendanceStudentsList> newList) {
+    public void updateList(List<Attendance_Students_List> newList) {
         this.mList = newList;
         notifyDataSetChanged();
     }
@@ -37,9 +37,9 @@ public class Reports_Detail_Adapter extends RecyclerView.Adapter<Reports_Detail_
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        AttendanceStudentsList student = mList.get(position);
-        holder.name.setText(student.getStudent_name());
-        holder.regNo.setText(student.getStudent_roll_no());
+        Attendance_Students_List student = mList.get(position);
+        holder.name.setText(student.getStudentName());
+        holder.regNo.setText(student.getStudentRollNo());
         holder.attendance.setText(student.getAttendance());
     }
 

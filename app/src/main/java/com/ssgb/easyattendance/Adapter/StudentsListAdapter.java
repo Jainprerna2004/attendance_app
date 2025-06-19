@@ -61,4 +61,9 @@ public class StudentsListAdapter extends RecyclerView.Adapter<ViewHolder_student
         return mList != null ? mList.size() : 0;
     }
 
+    @Override
+    public void onViewRecycled(@NonNull ViewHolder_students holder) {
+        super.onViewRecycled(holder);
+        holder.cleanup();
+    }
 }

@@ -18,7 +18,7 @@ public interface StudentsListDao {
     @Delete
     void delete(Students_List student);
 
-    @Query("SELECT * FROM students_list WHERE class_id = :classId ORDER BY name_student ASC")
+    @Query("SELECT * FROM students_list WHERE class_id = :classId")
     List<Students_List> getStudentsByClassId(String classId);
 
     @Query("SELECT * FROM students_list WHERE name_student LIKE :name")
@@ -29,4 +29,10 @@ public interface StudentsListDao {
 
     @Query("SELECT * FROM students_list")
     List<Students_List> getAll();
+
+    @Query("DELETE FROM students_list WHERE class_id = :classId")
+    void deleteByClassId(String classId);
+
+    @Query("SELECT * FROM students_list WHERE regNo_student = :regNo AND class_id = :classId LIMIT 1")
+    Students_List getStudentByRegNoAndClassId(String regNo, String classId);
 } 

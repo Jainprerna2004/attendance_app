@@ -16,113 +16,152 @@
         app:title="Create Class"
         />
 
-    <TextView
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Just create your class to manage daily attendance and report them. Add students in the next step"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_marginBottom="16dp"
-        android:textColor="@color/text_color_dark"
-        android:focusedByDefault="false"
-        android:layout_marginTop="16dp"/>
+        android:layout_height="match_parent"
+        android:fillViewport="true">
 
-
-
-    <EditText
-        android:id="@+id/subjectName_createClass"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/edittext_back"
-        android:padding="16dp"
-        android:layout_marginBottom="12dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:focusedByDefault="true"
-        android:hint="Subject name"/>
-
-    <EditText
-        android:id="@+id/className_createClass"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/edittext_back"
-        android:padding="16dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:focusedByDefault="true"
-        android:hint="Class name"/>
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Select theme :"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:textColor="@color/text_color_dark"
-        android:textSize="18dp"
-        android:layout_marginTop="12dp"/>
-
-    <RadioGroup
-        android:id="@+id/themeGroup"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:padding="8dp">
-
-        <RadioButton
-            android:id="@+id/theme1"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:button="@drawable/asset_bg_paleblue"
-            android:layout_marginEnd="8dp"/>
+            android:orientation="vertical"
+            android:padding="16dp">
 
-        <RadioButton
-            android:id="@+id/theme2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:button="@drawable/asset_bg_green"
-            android:layout_marginEnd="8dp"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Just create your class to manage daily attendance and report them. Add students in the next step"
+                android:layout_marginBottom="24dp"
+                android:textColor="@color/text_color_dark"
+                android:textSize="16sp"
+                android:lineSpacingExtra="4dp"/>
 
-        <RadioButton
-            android:id="@+id/theme3"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:button="@drawable/asset_bg_yellow"
-            android:layout_marginEnd="8dp"/>
+            <EditText
+                android:id="@+id/subjectName_createClass"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/edittext_back"
+                android:padding="16dp"
+                android:layout_marginBottom="16dp"
+                android:hint="Subject name"
+                android:textSize="16sp"/>
 
-        <RadioButton
-            android:id="@+id/theme4"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:button="@drawable/asset_bg_palegreen"
-            android:layout_marginEnd="8dp"/>
+            <EditText
+                android:id="@+id/className_createClass"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/edittext_back"
+                android:padding="16dp"
+                android:layout_marginBottom="24dp"
+                android:hint="Class name"
+                android:textSize="16sp"/>
 
-        <RadioButton
-            android:id="@+id/theme5"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:button="@drawable/asset_bg_paleorange"
-            android:layout_marginEnd="8dp"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Select Theme"
+                android:textColor="@color/text_color_dark"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="16dp"/>
 
-        <RadioButton
-            android:id="@+id/theme6"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:button="@drawable/asset_bg_white"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Choose a theme color for your class"
+                android:textColor="@color/text_color_dark"
+                android:textSize="14sp"
+                android:layout_marginBottom="16dp"/>
 
-    </RadioGroup>
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="none"
+                android:layout_marginBottom="24dp">
 
-    <Button
-        android:id="@+id/button_createClass"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="@color/white"
-        android:text="create"
-        android:background="@drawable/button_back"
-        android:padding="8dp"
-        android:layout_marginTop="16dp"
-        android:layout_gravity="center"/>
+                <LinearLayout
+                    android:id="@+id/themeContainer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="8dp">
+
+                    <ImageButton
+                        android:id="@+id/theme1"
+                        android:layout_width="80dp"
+                        android:layout_height="80dp"
+                        android:background="@drawable/theme_button_selector"
+                        android:src="@drawable/asset_bg_paleblue"
+                        android:scaleType="centerCrop"
+                        android:layout_marginEnd="12dp"
+                        android:contentDescription="Pale Blue Theme"/>
+
+                    <ImageButton
+                        android:id="@+id/theme2"
+                        android:layout_width="80dp"
+                        android:layout_height="80dp"
+                        android:background="@drawable/theme_button_selector"
+                        android:src="@drawable/asset_bg_green"
+                        android:scaleType="centerCrop"
+                        android:layout_marginEnd="12dp"
+                        android:contentDescription="Green Theme"/>
+
+                    <ImageButton
+                        android:id="@+id/theme3"
+                        android:layout_width="80dp"
+                        android:layout_height="80dp"
+                        android:background="@drawable/theme_button_selector"
+                        android:src="@drawable/asset_bg_yellow"
+                        android:scaleType="centerCrop"
+                        android:layout_marginEnd="12dp"
+                        android:contentDescription="Yellow Theme"/>
+
+                    <ImageButton
+                        android:id="@+id/theme4"
+                        android:layout_width="80dp"
+                        android:layout_height="80dp"
+                        android:background="@drawable/theme_button_selector"
+                        android:src="@drawable/asset_bg_palegreen"
+                        android:scaleType="centerCrop"
+                        android:layout_marginEnd="12dp"
+                        android:contentDescription="Pale Green Theme"/>
+
+                    <ImageButton
+                        android:id="@+id/theme5"
+                        android:layout_width="80dp"
+                        android:layout_height="80dp"
+                        android:background="@drawable/theme_button_selector"
+                        android:src="@drawable/asset_bg_paleorange"
+                        android:scaleType="centerCrop"
+                        android:layout_marginEnd="12dp"
+                        android:contentDescription="Pale Orange Theme"/>
+
+                    <ImageButton
+                        android:id="@+id/theme6"
+                        android:layout_width="80dp"
+                        android:layout_height="80dp"
+                        android:background="@drawable/theme_button_selector"
+                        android:src="@drawable/asset_bg_white"
+                        android:scaleType="centerCrop"
+                        android:contentDescription="White Theme"/>
+
+                </LinearLayout>
+
+            </HorizontalScrollView>
+
+            <Button
+                android:id="@+id/button_createClass"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:text="Create Class"
+                android:background="@drawable/button_back"
+                android:padding="16dp"
+                android:textSize="16sp"
+                android:layout_gravity="center"/>
+
+        </LinearLayout>
+
+    </ScrollView>
 
 </LinearLayout>
