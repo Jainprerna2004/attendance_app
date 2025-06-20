@@ -24,6 +24,9 @@ import com.ssgb.easyattendance.realm.Attendance_Students_List;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 public class ViewHolder_students extends RecyclerView.ViewHolder{
 
@@ -145,7 +148,8 @@ public class ViewHolder_students extends RecyclerView.ViewHolder{
                 stuName = mList.get(getAdapterPosition()).getName_student();
                 regNo = mList.get(getAdapterPosition()).getRegNo_student();
                 mobileNo = mList.get(getAdapterPosition()).getMobileNo_student();
-                Student_Edit_Sheet student_edit_sheet = new Student_Edit_Sheet(stuName, regNo, mobileNo);
+                String classId = mList.get(getAdapterPosition()).getClass_id();
+                Student_Edit_Sheet student_edit_sheet = new Student_Edit_Sheet(stuName, regNo, mobileNo, classId);
                 student_edit_sheet.setStyle(DialogFragment.STYLE_NORMAL, R.style.BottomSheetTheme);
                 student_edit_sheet.show(((FragmentActivity)view.getContext()).getSupportFragmentManager(), "BottomSheet");
             }

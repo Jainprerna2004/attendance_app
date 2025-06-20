@@ -164,14 +164,10 @@ public class ClassDetail_Activity extends AppCompatActivity {
         reports_open.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // Get current date
-                String currentDate = new SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault()).format(new Date());
-                
-                Intent intent = new Intent(ClassDetail_Activity.this, Reports_Detail_Activity.class);
-                intent.putExtra("classname", class_Name);
-                intent.putExtra("subjectname", subject_Name);
+                Intent intent = new Intent(ClassDetail_Activity.this, Reports_Activity.class);
+                intent.putExtra("class_name", class_Name);
+                intent.putExtra("subject_name", subject_Name);
                 intent.putExtra("room_ID", room_ID);
-                intent.putExtra("date", currentDate);
                 startActivity(intent);
             }
         });

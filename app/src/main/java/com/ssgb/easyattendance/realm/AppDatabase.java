@@ -5,6 +5,9 @@ import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import androidx.room.TypeConverters;
+import androidx.room.migration.Migration;
+import androidx.sqlite.db.SupportSQLiteDatabase;
+import androidx.annotation.NonNull;
 
 @Database(entities = {Students_List.class, Class_Names.class, Attendance_Students_List.class, Attendance_Reports.class}, version = 1, exportSchema = false)
 @TypeConverters({Converters.class})

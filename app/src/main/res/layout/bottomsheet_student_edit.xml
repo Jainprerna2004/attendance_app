@@ -95,6 +95,7 @@
 
         />
     <TextView
+        android:id="@+id/save_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="12dp"
@@ -104,6 +105,9 @@
         android:gravity="center"
         android:layout_marginTop="16dp"
         android:textColor="@color/white"
-        android:textStyle="bold"/>
+        android:textStyle="bold"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackground"/>
         </LinearLayout>
 </LinearLayout>

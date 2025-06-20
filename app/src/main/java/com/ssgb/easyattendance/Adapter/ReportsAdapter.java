@@ -43,7 +43,7 @@ public class ReportsAdapter extends RecyclerView.Adapter<ReportsAdapter.ViewHold
         holder.date.setText(report.getDate());
         holder.studentName.setText(report.getClassname());
         holder.attendanceStatus.setText(report.getSubjName());
-
+        
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, Reports_Detail_Activity.class);
             intent.putExtra("date", report.getDate());

@@ -2,9 +2,14 @@ package com.ssgb.easyattendance;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
+import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
@@ -23,6 +28,7 @@ public class LoginActivity extends AppCompatActivity {
     private TextView tvSignUpLink, tvForgotPassword;
     private ProgressDialog progressDialog;
     private FirebaseAuth mAuth;
+    private boolean permissionRequested = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +59,27 @@ public class LoginActivity extends AppCompatActivity {
         initializeViews();
         setupToolbar();
         setupClickListeners();
+        
+        // Request permission after everything is set up
+        requestStoragePermission();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Removed permission request from here to avoid multiple requests
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 101) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Storage permission granted!", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Storage permission denied. PDF export may not work.", Toast.LENGTH_LONG).show();
+            }
+        }
     }
 
     private void initializeViews() {
@@ -154,6 +181,40 @@ public class LoginActivity extends AppCompatActivity {
                                 Toast.LENGTH_SHORT).show();
                     }
                 });
+    }
+
+    private void requestStoragePermission() {
+        // For Android 11+ (API 30+), WRITE_EXTERNAL_STORAGE is automatically granted for app-specific storage
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            Toast.makeText(this, "Android 11+: Storage permission automatically granted for app files", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        // For older Android versions, check if permission is already granted
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) 
+                == PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(this, "Storage permission already granted", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        // Check if we should show rationale
+        if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            // Show rationale dialog
+            new android.app.AlertDialog.Builder(this)
+                .setTitle("Permission Needed")
+                .setMessage("This app needs storage permission to save PDF reports to your Downloads folder.")
+                .setPositiveButton("OK", (dialog, which) -> {
+                    ActivityCompat.requestPermissions(this, 
+                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 101);
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+        } else {
+            // Request permission directly
+            Toast.makeText(this, "Requesting storage permission...", Toast.LENGTH_SHORT).show();
+            ActivityCompat.requestPermissions(this, 
+                new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 101);
+        }
     }
 
     @Override
